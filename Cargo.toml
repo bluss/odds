@@ -1,0 +1,4 @@
+[package]
+name = "odds"
+version = "0.1.0"
+authors = ["root <root@localhost>"]
