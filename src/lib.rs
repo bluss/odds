@@ -38,7 +38,7 @@ pub unsafe fn get_unchecked_mut<T>(data: &mut [T], index: usize) -> &mut T {
 ///
 /// let c = |f: Fix<i32, _>, x| if x == 0 { 1 } else { x * f.call(x - 1) };
 /// let fact = Fix(&c);
-/// println!("{:?}", fact.call(5));
+/// assert_eq!(fact.call(5), 120);
 ///
 /// let data = &[true, false];
 /// let all_true = |f: Fix<_, _>, x| {
