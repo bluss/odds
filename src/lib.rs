@@ -8,6 +8,18 @@ pub unsafe fn raw_byte_repr<'a, T>(ptr: &'a T) -> &'a [u8] {
     )
 }
 
+#[inline]
+pub unsafe fn get_unchecked<T>(data: &[T], index: usize) -> &T {
+    debug_assert!(index < data.len());
+    data.get_unchecked(index)
+}
+
+#[inline]
+pub unsafe fn get_unchecked_mut<T>(data: &mut [T], index: usize) -> &mut T {
+    debug_assert!(index < data.len());
+    data.get_unchecked_mut(index)
+}
+
 pub struct Fix<'a, T, R>(pub &'a Fn(Fix<T, R>, T) -> R);
 
 impl<'a, T, R> Fix<'a, T, R> {
