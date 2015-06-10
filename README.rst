@@ -16,8 +16,15 @@ __ http://bluss.github.io/arrayvec/doc/odds
 .. |crates| image:: http://meritbadge.herokuapp.com/odds
 .. _crates: https://crates.io/crates/odds
 
+Recent Changes
+--------------
+
+- 0.2.0
+
+  - Removed **Void**, see `void` crate instead.
+
 License
-=======
+-------
 
 Dual-licensed to be compatible with the Rust project.
 

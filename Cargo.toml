@@ -12,5 +12,7 @@ keywords = ["data-structure", "misc", "range", "debug-assert", "fix-combinator"]
 
 [dependencies]
 
+unreachable = { version = "0.0.2" }
+
 [features]
 unstable = []

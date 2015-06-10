@@ -13,11 +13,14 @@
 
 #![cfg_attr(feature="unstable", feature(unboxed_closures, core))]
 
+extern crate unreachable;
+
 mod range;
 mod fix;
 
 pub use fix::Fix;
 pub use range::IndexRange;
+use unreachable::unreachable;
 
 use std::{slice, mem};
 
@@ -41,18 +44,6 @@ pub unsafe fn get_unchecked<T>(data: &[T], index: usize) -> &T {
 pub unsafe fn get_unchecked_mut<T>(data: &mut [T], index: usize) -> &mut T {
     debug_assert!(index < data.len());
     data.get_unchecked_mut(index)
-}
-
-/// An empty type
-pub enum Void { }
-
-/// FIXME: Replace with intrinsic when it's stable
-#[inline]
-unsafe fn unreachable() -> ! {
-    let void: &Void = mem::transmute(&());
-    match *void {
-        // no cases
-    }
 }
 
 /// Act as `debug_assert!` in debug mode, asserting that this point is not reached.
