@@ -17,7 +17,19 @@
 /// };
 /// let all = Fix(&all_true);
 /// assert_eq!(all.call(data), false);
+///
 /// ```
+#[cfg_attr(feature="unstable", doc="
+```
+// using feature `unstable`
+use odds::Fix;
+
+let c = |f: Fix<i32, _>, x| if x == 0 { 1 } else { x * f(x - 1) };
+let fact = Fix(&c);
+assert_eq!(fact(5), 120);
+```
+"
+)]
 pub struct Fix<'a, T, R>(pub &'a Fn(Fix<T, R>, T) -> R);
 
 impl<'a, T, R> Fix<'a, T, R> {
