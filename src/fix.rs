@@ -33,3 +33,28 @@ impl<'a, T, R> Clone for Fix<'a, T, R> {
 
 impl<'a, T, R> Copy for Fix<'a, T, R> { }
 
+#[cfg(feature="unstable")]
+impl<'a, T, R> FnOnce<(T,)> for Fix<'a, T, R> {
+    type Output = R;
+    #[inline]
+    extern "rust-call" fn call_once(self, x: (T,)) -> R {
+        self.call(x.0)
+    }
+}
+
+#[cfg(feature="unstable")]
+impl<'a, T, R> FnMut<(T,)> for Fix<'a, T, R> {
+    #[inline]
+    extern "rust-call" fn call_mut(&mut self, x: (T,)) -> R {
+        self.call(x.0)
+    }
+}
+
+#[cfg(feature="unstable")]
+impl<'a, T, R> Fn<(T,)> for Fix<'a, T, R> {
+    #[inline]
+    extern "rust-call" fn call(&self, x: (T,)) -> R {
+        self.call(x.0)
+    }
+}
+

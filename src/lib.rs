@@ -2,6 +2,16 @@
 //!
 //! The goal of this crate is to abolish itself. Things that are here
 //! will move to other places when possible.
+//!
+//! The **odds** crate has the following cargo feature flags:
+//!
+//! - `unstable`.
+//!   - Optional.
+//!   - Requires nightly channel.
+//!   - Implement the closure traits for **Fix**.
+//!
+
+#![cfg_attr(feature="unstable", feature(unboxed_closures, core))]
 
 mod range;
 mod fix;

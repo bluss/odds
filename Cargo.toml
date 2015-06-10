@@ -11,3 +11,6 @@ repository = "https://github.com/bluss/odds"
 keywords = ["data-structure", "misc", "range", "debug-assert", "combinator"]
 
 [dependencies]
+
+[features]
+unstable = []
