@@ -2,7 +2,7 @@
 odds
 ====
 
-A vector with fixed capacity.
+Odds and ends — collection miscellania.
 
 Please read the `API documentation here`__
 
