@@ -1,6 +1,6 @@
 [package]
 name = "odds"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["bluss"]
 license = "MIT/Apache-2.0"
 
@@ -8,7 +8,7 @@ description = "Odds and ends — collection miscellania. The goal of this crate 
 documentation = "http://bluss.github.io/arrayvec/doc/odds"
 repository = "https://github.com/bluss/odds"
 
-keywords = ["data-structure", "misc", "range", "debug-assert", "combinator"]
+keywords = ["data-structure", "misc", "range", "debug-assert", "fix-combinator"]
 
 [dependencies]
 
