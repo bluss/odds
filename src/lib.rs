@@ -62,3 +62,52 @@ pub unsafe fn slice_unchecked<T>(data: &[T], from: usize, to: usize) -> &[T] {
     debug_assert!((&data[from..to], true).1);
     std::slice::from_raw_parts(data.as_ptr().offset(from as isize), to - from)
 }
+
+#[test]
+#[should_panic]
+fn test_get_unchecked_1() {
+    if cfg!(not(debug_assertions)) {
+        panic!();
+    }
+    unsafe {
+        get_unchecked(&[1, 2, 3], 3);
+    }
+}
+
+#[test]
+#[should_panic]
+fn test_slice_unchecked_1() {
+    // These tests only work in debug mode
+    if cfg!(not(debug_assertions)) {
+        panic!();
+    }
+    unsafe {
+        slice_unchecked(&[1, 2, 3], 0, 4);
+    }
+}
+
+#[test]
+#[should_panic]
+fn test_slice_unchecked_2() {
+    if cfg!(not(debug_assertions)) {
+        panic!();
+    }
+    unsafe {
+        slice_unchecked(&[1, 2, 3], 4, 4);
+    }
+}
+
+#[test]
+fn test_slice_unchecked_3() {
+    // This test only works in release mode
+    // test some benign unchecked slicing
+    let data = [1, 2, 3, 4];
+    let sl = &data[0..0];
+    if cfg!(debug_assertions) {
+        /* silent */
+    } else {
+        unsafe {
+            assert_eq!(slice_unchecked(sl, 0, 4), &[1, 2, 3, 4]);
+        }
+    }
+}
