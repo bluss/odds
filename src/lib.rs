@@ -54,3 +54,11 @@ pub unsafe fn debug_assert_unreachable() -> ! {
     debug_assert!(false, "Entered unreachable section, this is a bug!");
     unreachable()
 }
+
+/// Check slicing bounds in debug mode, otherwise just act as an unchecked
+/// slice call.
+#[inline]
+pub unsafe fn slice_unchecked<T>(data: &[T], from: usize, to: usize) -> &[T] {
+    debug_assert!((&data[from..to], true).1);
+    std::slice::from_raw_parts(data.as_ptr().offset(from as isize), to - from)
+}
