@@ -24,6 +24,18 @@ use unreachable::unreachable;
 
 use std::{slice, mem};
 
+/// Compare if **a** and **b** are equal *as pointers*.
+#[inline]
+pub fn ref_eq<T>(a: &T, b: &T) -> bool {
+    ptr_eq(a, b)
+}
+
+/// Compare if **a** and **b** are equal pointers.
+#[inline]
+pub fn ptr_eq<T>(a: *const T, b: *const T) -> bool {
+    a == b
+}
+
 /// Safe to use with any wholly initialized memory `ptr`
 pub unsafe fn raw_byte_repr<'a, T>(ptr: &'a T) -> &'a [u8] {
     slice::from_raw_parts(
