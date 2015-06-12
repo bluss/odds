@@ -19,9 +19,21 @@ __ http://bluss.github.io/arrayvec/doc/odds
 Recent Changes
 --------------
 
+- 0.2.3
+
+  - Add default for Fix so that ``Fix<T> == Fix<T, T>``
+
+- 0.2.2
+
+  - Add ptr_eq, ref_eq
+
+- 0.2.1
+
+  - Add slice_unchecked
+
 - 0.2.0
 
-  - Removed **Void**, see `void` crate instead.
+  - Removed **Void**, see ``void`` crate instead.
 
 License
 -------
