@@ -1,12 +1,16 @@
 
 /// Fixpoint combinator for rust closures, generalized over the return type.
 ///
-/// The **Fix** only supports direct function call notation with the nightly channel.
+/// In **Fix\<T, R\>**, **T** is the argument type, and **R** is the return type,
+/// **R** defaults to **T**.
+///
+/// **Fix** only supports function call notation with the nightly channel and
+/// the cargo feature ‘unstable’ enabled.
 ///
 /// ```
 /// use odds::Fix;
 ///
-/// let c = |f: Fix<i32, _>, x| if x == 0 { 1 } else { x * f.call(x - 1) };
+/// let c = |f: Fix<i32>, x| if x == 0 { 1 } else { x * f.call(x - 1) };
 /// let fact = Fix(&c);
 /// assert_eq!(fact.call(5), 120);
 ///
@@ -24,13 +28,13 @@
 // using feature `unstable`
 use odds::Fix;
 
-let c = |f: Fix<i32, _>, x| if x == 0 { 1 } else { x * f(x - 1) };
+let c = |f: Fix<i32>, x| if x == 0 { 1 } else { x * f(x - 1) };
 let fact = Fix(&c);
 assert_eq!(fact(5), 120);
 ```
 "
 )]
-pub struct Fix<'a, T, R>(pub &'a Fn(Fix<T, R>, T) -> R);
+pub struct Fix<'a, T, R = T>(pub &'a Fn(Fix<T, R>, T) -> R);
 
 impl<'a, T, R> Fix<'a, T, R> {
     pub fn call(&self, arg: T) -> R {
