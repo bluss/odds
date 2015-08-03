@@ -39,10 +39,10 @@ pub fn ptr_eq<T>(a: *const T, b: *const T) -> bool {
 
 /// Safe to use with any wholly initialized memory `ptr`
 #[inline]
-pub unsafe fn raw_byte_repr<T>(ptr: &T) -> &[u8] {
+pub unsafe fn raw_byte_repr<T: ?Sized>(ptr: &T) -> &[u8] {
     slice::from_raw_parts(
         ptr as *const _ as *const u8,
-        mem::size_of::<T>(),
+        mem::size_of_val(ptr),
     )
 }
 
@@ -75,6 +75,14 @@ pub unsafe fn debug_assert_unreachable() -> ! {
 pub unsafe fn slice_unchecked<T>(data: &[T], from: usize, to: usize) -> &[T] {
     debug_assert!((&data[from..to], true).1);
     std::slice::from_raw_parts(data.as_ptr().offset(from as isize), to - from)
+}
+
+#[test]
+fn test_repr() {
+    unsafe {
+        assert_eq!(raw_byte_repr(&17u8), &[17]);
+        assert_eq!(raw_byte_repr("abc"), "abc".as_bytes());
+    }
 }
 
 #[test]
