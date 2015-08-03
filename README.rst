@@ -19,6 +19,10 @@ __ http://bluss.github.io/arrayvec/doc/odds
 Recent Changes
 --------------
 
+- 0.2.4
+
+  - Add `odds::string::StrExt`, extensions to `&str`.
+
 - 0.2.3
 
   - Add default for Fix so that ``Fix<T> == Fix<T, T>``
