@@ -18,6 +18,7 @@ extern crate unreachable;
 mod range;
 mod fix;
 pub mod string;
+pub mod vec;
 
 pub use fix::Fix;
 pub use range::IndexRange;
