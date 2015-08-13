@@ -4,6 +4,11 @@ use std::iter;
 use std::ptr;
 use std::str;
 
+/// Mask of the value bits of a continuation byte
+const CONT_MASK: u8 = 0b0011_1111;
+/// Value of the tag bits (tag mask is !CONT_MASK) of a continuation byte
+const TAG_CONT_U8: u8 = 0b1000_0000;
+
 /// Extra methods for `str`
 pub trait StrExt {
     /// Repeat the string `n` times.
@@ -19,6 +24,25 @@ pub trait StrExt {
 
     /// Produce all non-empty substrings
     fn substrings(&self) -> Substrings;
+
+    /// Return `true` if `index` is acceptable for slicing the string.
+    ///
+    /// Acceptable indices are byte offsets from the start of the string
+    /// that mark the start of an encoded utf-8 sequence, or an index equal
+    /// to `self.len()`.
+    ///
+    /// Return `false` if the index is out of bounds.
+    ///
+    /// For example the string `"Abcαβγ"` has length is 9 and the acceptable
+    /// indices are *0, 1, 2, 3, 5, 7,* and *9*.
+    ///
+    /// ```
+    /// use odds::string::StrExt;
+    /// for &ix in &[0, 1, 2, 3, 5, 7, 9] {
+    ///     assert!("Abcαβγ".is_acceptable_index(ix));
+    /// }
+    /// ```
+    fn is_acceptable_index(&self, index: usize) -> bool;
 }
 
 impl StrExt for str {
@@ -42,6 +66,17 @@ impl StrExt for str {
 
     fn substrings(&self) -> Substrings {
         Substrings { iter: self.prefixes().flat_map(str::suffixes) }
+    }
+
+    fn is_acceptable_index(&self, index: usize) -> bool {
+        if index == self.len() {
+            true
+        } else {
+            self.as_bytes().get(index).map_or(false, |byte| {
+                // check it's not a continuation byte
+                (byte & !CONT_MASK) != TAG_CONT_U8
+            })
+        }
     }
 }
 
@@ -89,22 +124,6 @@ impl<'a> Iterator for Substrings<'a> {
     }
 }
 
-/// Mask of the value bits of a continuation byte
-const CONT_MASK: u8 = 0b0011_1111;
-/// Value of the tag bits (tag mask is !CONT_MASK) of a continuation byte
-const TAG_CONT_U8: u8 = 0b1000_0000;
-
-fn is_acceptable_str_index(s: &str, index: usize) -> bool {
-    if index == s.len() {
-        true
-    } else {
-        s.as_bytes().get(index).map_or(false, |byte| {
-            // check it's not a continuation byte
-            (byte & !CONT_MASK) != TAG_CONT_U8
-        })
-    }
-}
-
 /// Extra methods for `String`
 pub trait StringExt {
     /// **Panics** if `index` is out of bounds.
@@ -114,7 +133,7 @@ pub trait StringExt {
 impl StringExt for String {
     /// **Panics** if `index` is out of bounds.
     fn insert_str(&mut self, index: usize, s: &str) {
-        assert!(is_acceptable_str_index(self, index));
+        assert!(self.is_acceptable_index(index));
         self.reserve(s.len());
         // move the tail, then copy in the string
         unsafe {
@@ -134,13 +153,19 @@ impl StringExt for String {
 
 #[test]
 fn test_acc_index() {
-    let s = "αβγabc";
+    let s = "Abcαβγ";
     for (ix, _) in s.char_indices() {
-        assert!(is_acceptable_str_index(s, ix));
+        assert!(s.is_acceptable_index(ix));
     }
-    assert!(is_acceptable_str_index(s, s.len()));
+    assert!(s.is_acceptable_index(s.len()));
+    let indices = [0, 1, 2, 3, 5, 7, 9];
+
+    for &ix in &indices {
+        assert!(s.is_acceptable_index(ix));
+    }
+
     let t = "";
-    assert!(is_acceptable_str_index(t, 0));
+    assert!(t.is_acceptable_index(0));
 }
 
 #[test]
