@@ -1,9 +1,10 @@
-//! Extensions to `&str`
+//! Extensions to `&str` and `String`
 //!
 use std::iter;
+use std::ptr;
 use std::str;
 
-/// Extra methods for strings
+/// Extra methods for `str`
 pub trait StrExt {
     /// Repeat the string `n` times.
     fn rep(&self, n: usize) -> String;
@@ -86,4 +87,68 @@ impl<'a> Iterator for Substrings<'a> {
     fn next(&mut self) -> Option<&'a str> {
         self.iter.next()
     }
+}
+
+/// Mask of the value bits of a continuation byte
+const CONT_MASK: u8 = 0b0011_1111;
+/// Value of the tag bits (tag mask is !CONT_MASK) of a continuation byte
+const TAG_CONT_U8: u8 = 0b1000_0000;
+
+fn is_acceptable_str_index(s: &str, index: usize) -> bool {
+    if index == s.len() {
+        true
+    } else {
+        s.as_bytes().get(index).map_or(false, |byte| {
+            // check it's not a continuation byte
+            (byte & !CONT_MASK) != TAG_CONT_U8
+        })
+    }
+}
+
+/// Extra methods for `String`
+pub trait StringExt {
+    /// **Panics** if `index` is out of bounds.
+    fn insert_str(&mut self, index: usize, s: &str);
+}
+
+impl StringExt for String {
+    /// **Panics** if `index` is out of bounds.
+    fn insert_str(&mut self, index: usize, s: &str) {
+        assert!(is_acceptable_str_index(self, index));
+        self.reserve(s.len());
+        // move the tail, then copy in the string
+        unsafe {
+            let v = self.as_mut_vec();
+            let ptr = v.as_mut_ptr();
+            ptr::copy(ptr.offset(index as isize),
+                      ptr.offset((index + s.len()) as isize),
+                      v.len() - index);
+            ptr::copy_nonoverlapping(s.as_ptr(),
+                                     ptr.offset(index as isize),
+                                     s.len());
+            let new_len = v.len() + s.len();
+            v.set_len(new_len);
+        }
+    }
+}
+
+#[test]
+fn test_acc_index() {
+    let s = "αβγabc";
+    for (ix, _) in s.char_indices() {
+        assert!(is_acceptable_str_index(s, ix));
+    }
+    assert!(is_acceptable_str_index(s, s.len()));
+    let t = "";
+    assert!(is_acceptable_str_index(t, 0));
+}
+
+#[test]
+fn test_string_ext() {
+    let mut s = String::new();
+    let t = "αβγabc";
+    s.insert_str(0, t);
+    assert_eq!(s, t);
+    s.insert_str(2, "x");
+    assert_eq!(s, "αxβγabc");
 }
