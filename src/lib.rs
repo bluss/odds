@@ -1,7 +1,8 @@
 //! Odds and ends — collection miscellania.
 //!
-//! The goal of this crate is to abolish itself. Things that are here
-//! will move to other places when possible.
+//! - Utilities for debug-checked, release-unchecked indexing and slicing
+//! - Fixpoint combinator for closures
+//! - String and Vec extensions
 //!
 //! The **odds** crate has the following cargo feature flags:
 //!
