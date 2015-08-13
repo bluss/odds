@@ -1,28 +1,45 @@
+//! Extensions to `Vec`
 
-use std::ops::Range;
+use range::IndexRange;
 use std::ptr;
 use std::slice;
 
+/// Extra methods for `Vec<T>`
 pub trait VecExt<T> {
-    fn splice<I>(&mut self, r: Range<usize>, iter: I)
-        where I: IntoIterator<Item=T>,
-              I::IntoIter: ExactSizeIterator;
-}
-
-impl<T> VecExt<T> for Vec<T> {
+    /// Remove elements in a range, and insert from an iterator in their place.
+    ///
+    /// The removed and inserted ranges don't have to match in length.
+    ///
     /// **Panics** if range `r` is out of bounds.
     ///
     /// **Panics** if iterator `iter` is not of exact length.
-    fn splice<I>(&mut self, r: Range<usize>, iter: I)
+    fn splice<R, I>(&mut self, r: R, iter: I)
         where I: IntoIterator<Item=T>,
               I::IntoIter: ExactSizeIterator,
+              R: IndexRange;
+}
+
+/// `Vec::splice`: Remove elements in a range, and insert from an iterator
+/// in their place.
+///
+/// The removed and inserted ranges don't have to match in length.
+///
+/// **Panics** if range `r` is out of bounds.
+///
+/// **Panics** if iterator `iter` is not of exact length.
+impl<T> VecExt<T> for Vec<T> {
+    fn splice<R, I>(&mut self, r: R, iter: I)
+        where I: IntoIterator<Item=T>,
+              I::IntoIter: ExactSizeIterator,
+              R: IndexRange,
     {
         let v = self;
         let mut iter = iter.into_iter();
         let (input_len, _) = iter.size_hint();
+        let old_len = v.len();
+        let r = r.start().unwrap_or(0)..r.end().unwrap_or(old_len);
         assert!(r.start <= r.end);
         assert!(r.end <= v.len());
-        let old_len = v.len();
         let rm_len = r.end - r.start;
         v.reserve(input_len.saturating_sub(rm_len));
 
@@ -46,6 +63,7 @@ impl<T> VecExt<T> for Vec<T> {
             }
 
             // fill in elements from the iterator
+            // FIXME: On panic, drop tail properly too (using panic guard)
             {
                 let grow_slc = slice::from_raw_parts_mut(ptr.offset(r.start as isize), input_len);
                 let mut len = r.start;
@@ -90,4 +108,8 @@ fn test_splice() {
     let mut v = vec![1, 2, 3, 4];
     v.splice(0..4, None);
     assert_eq!(v, &[]);
+
+    let mut v = vec![1, 2, 3, 4];
+    v.splice(1.., Some(9));
+    assert_eq!(v, &[1, 9]);
 }
