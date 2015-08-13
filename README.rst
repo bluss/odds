@@ -19,6 +19,10 @@ __ http://bluss.github.io/arrayvec/doc/odds
 Recent Changes
 --------------
 
+- 0.2.5
+  
+  - Add `StringExt::insert_str` and `VecExt::splice`
+
 - 0.2.4
 
   - Add `odds::string::StrExt`, extensions to `&str`.
