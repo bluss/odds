@@ -51,7 +51,7 @@ impl<T> VecExt<T> for Vec<T> {
             {
                 let mslc = slice::from_raw_parts_mut(ptr.offset(r.start as isize), rm_len);
                 for elt_ptr in mslc {
-                    ptr::read(elt_ptr);
+                    ptr::read(elt_ptr); // Possible panic
                 }
             }
 
