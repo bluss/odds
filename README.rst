@@ -19,6 +19,11 @@ __ http://bluss.github.io/arrayvec/doc/odds
 Recent Changes
 --------------
 
+- 0.2.6
+
+  - Add lifetime bounds for Fix for well-formedness (Rust RFC 1214)
+  - Add `StrExt::is_acceptable_index`
+
 - 0.2.5
   
   - Add `StringExt::insert_str` and `VecExt::splice`
