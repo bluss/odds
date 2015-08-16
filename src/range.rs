@@ -10,11 +10,9 @@ use std::ops::{
 /// by range syntax like `..`, `a..`, `..b` or `c..d`.
 pub trait IndexRange {
     #[inline]
-    #[doc(hidden)]
     /// Start index (inclusive)
     fn start(&self) -> Option<usize> { None }
     #[inline]
-    #[doc(hidden)]
     /// End index (exclusive)
     fn end(&self) -> Option<usize> { None }
 }
