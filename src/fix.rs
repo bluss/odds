@@ -34,7 +34,7 @@ assert_eq!(fact(5), 120);
 ```
 "
 )]
-pub struct Fix<'a, T, R = T>(pub &'a Fn(Fix<T, R>, T) -> R);
+pub struct Fix<'a, T: 'a, R: 'a = T>(pub &'a Fn(Fix<T, R>, T) -> R);
 
 impl<'a, T, R> Fix<'a, T, R> {
     pub fn call(&self, arg: T) -> R {
