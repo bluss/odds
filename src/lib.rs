@@ -65,7 +65,7 @@ pub unsafe fn get_unchecked_mut<T>(data: &mut [T], index: usize) -> &mut T {
 /// Act as `debug_assert!` in debug mode, asserting that this point is not reached.
 ///
 /// In release mode, no checks are done, and it acts like the `unreachable` intrinsic.
-#[inline]
+#[inline(always)]
 pub unsafe fn debug_assert_unreachable() -> ! {
     debug_assert!(false, "Entered unreachable section, this is a bug!");
     unreachable()
