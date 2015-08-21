@@ -19,6 +19,10 @@ __ http://bluss.github.io/arrayvec/doc/odds
 Recent Changes
 --------------
 
+- 0.2.7
+
+  - `inline(always)` on `debug_assert_unreachable`
+
 - 0.2.6
 
   - Add lifetime bounds for Fix for well-formedness (Rust RFC 1214)
