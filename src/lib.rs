@@ -16,11 +16,14 @@
 
 extern crate unreachable;
 
+mod checked_index;
 mod range;
 mod fix;
 pub mod string;
 pub mod vec;
 
+pub use checked_index::CheckedIndex;
+pub use checked_index::CheckedIndexMut;
 pub use fix::Fix;
 pub use range::IndexRange;
 use unreachable::unreachable;
