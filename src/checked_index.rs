@@ -29,7 +29,7 @@ impl<T> CheckedIndex<usize> for [T] {
 
 impl<T> CheckedIndex<ops::RangeFrom<usize>> for [T] {
     fn has_index(&self, index: &ops::RangeFrom<usize>) -> bool {
-        self.has_index(&(index.start..self.len()))
+        index.start <= self.len()
     }
 }
 
