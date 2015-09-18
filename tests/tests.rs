@@ -1,32 +1,31 @@
 
-extern crate odds;
-extern crate itertools;
-
-use odds::string::StrExt;
-
 #[test]
-fn rep() {
-    assert_eq!("".rep(0), "");
-    assert_eq!("xy".rep(0), "");
-    assert_eq!("xy".rep(3), "xyxyxy");
-}
+fn test_zst_push() {
+    const N: usize = 8;
+    use std::collections::VecDeque;
 
-#[test]
-fn prefixes() {
-    itertools::assert_equal(
-        "".prefixes(),
-        Vec::<&str>::new());
-    itertools::assert_equal(
-        "x".prefixes(),
-        vec!["x"]);
-    itertools::assert_equal(
-        "abc".prefixes(),
-        vec!["a", "ab", "abc"]);
-}
+    // Zero sized type
+    struct Zst;
 
-#[test]
-fn substrings() {
-    itertools::assert_equal(
-        "αβγ".substrings(),
-        vec!["α", "αβ", "β", "αβγ", "βγ", "γ"]);
+    // Test that for all possible sequences of push_front / push_back,
+    // we end up with a deque of the correct size
+
+    for len in 0..N {
+        let mut tester = VecDeque::with_capacity(len);
+        assert_eq!(tester.len(), 0);
+        assert!(tester.capacity() >= len);
+        for case in 0..(1 << len) {
+            assert_eq!(tester.len(), 0);
+            for bit in 0..len {
+                if case & (1 << bit) != 0 {
+                    tester.push_front(Zst);
+                } else {
+                    tester.push_back(Zst);
+                }
+            }
+            assert_eq!(tester.len(), len);
+            assert_eq!(tester.iter().count(), len);
+            tester.clear();
+        }
+    }
 }
