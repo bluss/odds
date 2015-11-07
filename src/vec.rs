@@ -131,7 +131,6 @@ impl<T> VecExt<T> for Vec<T> {
 
 #[test]
 fn test_splice() {
-    use std::iter::once;
 
     let mut v = vec![1, 2, 3, 4];
     v.splice(1..1, vec![9, 9]);
@@ -146,7 +145,7 @@ fn test_splice() {
     assert_eq!(v, &[1, 9, 9, 5]);
 
     let mut v = vec![1, 2, 3, 4];
-    v.splice(0..4, once(9));
+    v.splice(0..4, Some(9));
     assert_eq!(v, &[9]);
 
     let mut v = vec![1, 2, 3, 4];
