@@ -19,6 +19,10 @@ __ http://bluss.github.io/arrayvec/doc/odds
 Recent Changes
 --------------
 
+- 0.2.8
+
+  - Add `VecExt::retain_mut`
+
 - 0.2.7
 
   - `inline(always)` on `debug_assert_unreachable`

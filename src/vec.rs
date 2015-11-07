@@ -17,6 +17,27 @@ pub trait VecExt<T> {
         where I: IntoIterator<Item=T>,
               I::IntoIter: ExactSizeIterator,
               R: IndexRange;
+
+    /// Retains only the elements specified by the predicate.
+    ///
+    /// In other words, remove all elements `e` such that `f(&mut e)` returns false.
+    /// This method operates in place and preserves the order of the retained
+    /// elements.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use odds::vec::VecExt;
+    /// let mut vec = vec![1, 2, 3, 4];
+    /// vec.retain_mut(|x| {
+    ///     let keep = *x % 2 == 0;
+    ///     *x *= 10;
+    ///     keep
+    /// });
+    /// assert_eq!(vec, [20, 40]);
+    /// ```
+    fn retain_mut<F>(&mut self, f: F)
+        where F: FnMut(&mut T) -> bool;
 }
 
 /// `Vec::splice`: Remove elements in a range, and insert from an iterator
@@ -82,6 +103,29 @@ impl<T> VecExt<T> for Vec<T> {
             }
         }
         //assert!(iter.next().is_none(), "splice: iterator not exact size");
+    }
+
+    // Adapted from libcollections/vec.rs in Rust
+    // Primary author in Rust: Michael Darakananda
+    fn retain_mut<F>(&mut self, mut f: F)
+        where F: FnMut(&mut T) -> bool
+    {
+        let len = self.len();
+        let mut del = 0;
+        {
+            let v = &mut **self;
+
+            for i in 0..len {
+                if !f(&mut v[i]) {
+                    del += 1;
+                } else if del > 0 {
+                    v.swap(i - del, i);
+                }
+            }
+        }
+        if del > 0 {
+            self.truncate(len - del);
+        }
     }
 }
 
