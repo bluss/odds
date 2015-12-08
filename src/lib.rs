@@ -79,6 +79,29 @@ pub unsafe fn slice_unchecked<T>(data: &[T], from: usize, to: usize) -> &[T] {
     std::slice::from_raw_parts(data.as_ptr().offset(from as isize), to - from)
 }
 
+/// Check slicing bounds in debug mode, otherwise just act as an unchecked
+/// slice call.
+#[inline]
+pub unsafe fn slice_unchecked_mut<T>(data: &mut [T], from: usize, to: usize) -> &mut [T] {
+    debug_assert!((&data[from..to], true).1);
+    std::slice::from_raw_parts_mut(data.as_mut_ptr().offset(from as isize), to - from)
+}
+
+/// Create a length 1 slice out of a reference
+pub fn ref_slice<T>(ptr: &T) -> &[T] {
+    unsafe {
+        std::slice::from_raw_parts(ptr, 1)
+    }
+}
+
+/// Create a length 1 mutable slice out of a reference
+pub fn ref_slice_mut<T>(ptr: &mut T) -> &mut [T] {
+    unsafe {
+        std::slice::from_raw_parts_mut(ptr, 1)
+    }
+}
+
+
 #[test]
 fn test_repr() {
     unsafe {

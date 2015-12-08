@@ -19,6 +19,11 @@ __ http://bluss.github.io/arrayvec/doc/odds
 Recent Changes
 --------------
 
+- 0.2.9
+
+  - Add ``slice_unchecked_mut``
+  - Add ``ref_slice``, ``ref_slice_mut``
+
 - 0.2.8
 
   - Add `VecExt::retain_mut`
