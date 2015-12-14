@@ -12,7 +12,7 @@
 //!   - Implement the closure traits for **Fix**.
 //!
 
-#![cfg_attr(feature="unstable", feature(unboxed_closures, core))]
+#![cfg_attr(feature="unstable", feature(unboxed_closures, fn_traits))]
 
 extern crate unreachable;
 

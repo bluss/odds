@@ -19,6 +19,10 @@ __ http://bluss.github.io/arrayvec/doc/odds
 Recent Changes
 --------------
 
+- 0.2.10
+
+  - Fix feature flags when using cargo feature ``unstable``
+
 - 0.2.9
 
   - Add ``slice_unchecked_mut``
