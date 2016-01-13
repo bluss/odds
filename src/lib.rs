@@ -14,8 +14,6 @@
 
 #![cfg_attr(feature="unstable", feature(unboxed_closures, fn_traits))]
 
-extern crate unreachable;
-
 mod range;
 mod fix;
 pub mod string;
@@ -23,7 +21,6 @@ pub mod vec;
 
 pub use fix::Fix;
 pub use range::IndexRange;
-use unreachable::unreachable;
 
 use std::{slice, mem};
 
@@ -60,6 +57,14 @@ pub unsafe fn get_unchecked<T>(data: &[T], index: usize) -> &T {
 pub unsafe fn get_unchecked_mut<T>(data: &mut [T], index: usize) -> &mut T {
     debug_assert!(index < data.len());
     data.get_unchecked_mut(index)
+}
+
+#[inline(always)]
+unsafe fn unreachable() -> ! {
+    enum Void { }
+    match *(1 as *const Void) {
+        /* unreachable */
+    }
 }
 
 /// Act as `debug_assert!` in debug mode, asserting that this point is not reached.

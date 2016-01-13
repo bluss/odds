@@ -8,32 +8,32 @@ use std::ops::{
 
 /// **IndexRange** is implemented by Rust's built-in range types, produced
 /// by range syntax like `..`, `a..`, `..b` or `c..d`.
-pub trait IndexRange {
+pub trait IndexRange<T=usize> {
     #[inline]
     /// Start index (inclusive)
-    fn start(&self) -> Option<usize> { None }
+    fn start(&self) -> Option<T> { None }
     #[inline]
     /// End index (exclusive)
-    fn end(&self) -> Option<usize> { None }
+    fn end(&self) -> Option<T> { None }
 }
 
 
-impl IndexRange for RangeFull {}
+impl<T> IndexRange<T> for RangeFull {}
 
-impl IndexRange for RangeFrom<usize> {
+impl<T: Copy> IndexRange<T> for RangeFrom<T> {
     #[inline]
-    fn start(&self) -> Option<usize> { Some(self.start) }
+    fn start(&self) -> Option<T> { Some(self.start) }
 }
 
-impl IndexRange for RangeTo<usize> {
+impl<T: Copy> IndexRange<T> for RangeTo<T> {
     #[inline]
-    fn end(&self) -> Option<usize> { Some(self.end) }
+    fn end(&self) -> Option<T> { Some(self.end) }
 }
 
-impl IndexRange for Range<usize> {
+impl<T: Copy> IndexRange<T> for Range<T> {
     #[inline]
-    fn start(&self) -> Option<usize> { Some(self.start) }
+    fn start(&self) -> Option<T> { Some(self.start) }
     #[inline]
-    fn end(&self) -> Option<usize> { Some(self.end) }
+    fn end(&self) -> Option<T> { Some(self.end) }
 }
 
