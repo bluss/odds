@@ -19,6 +19,12 @@ __ http://bluss.github.io/arrayvec/doc/odds
 Recent Changes
 --------------
 
+- 0.2.11
+
+  - Add type parameter to ``IndexRange`` (that defaults to ``usize``,
+    so that it's non-breaking).
+  - Drop dep on ``unreachable`` (provided in a simpler implementation locally).
+
 - 0.2.10
 
   - Fix feature flags when using cargo feature ``unstable``
