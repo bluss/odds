@@ -12,8 +12,6 @@ keywords = ["data-structure", "unchecked", "string", "debug-assert", "fix-combin
 
 [dependencies]
 
-unreachable = { version = "0.0.2" }
-
 [dev-dependencies]
 itertools = "0.4"
 
