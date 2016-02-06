@@ -19,6 +19,11 @@ __ http://bluss.github.io/arrayvec/doc/odds
 Recent Changes
 --------------
 
+- 0.2.12
+
+  - Add default feature "std". odds uses ``no_std`` if you opt out of this
+    feature.
+
 - 0.2.11
 
   - Add type parameter to ``IndexRange`` (that defaults to ``usize``,
