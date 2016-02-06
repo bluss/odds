@@ -8,7 +8,7 @@ description = "Odds and ends — collection miscellania. Odds for example provid
 documentation = "http://bluss.github.io/arrayvec/doc/odds"
 repository = "https://github.com/bluss/odds"
 
-keywords = ["data-structure", "unchecked", "string", "debug-assert", "fix-combinator"]
+keywords = ["data-structure", "unchecked", "debug-assert", "fix-combinator", "no_std"]
 
 [dependencies]
 
@@ -16,4 +16,8 @@ keywords = ["data-structure", "unchecked", "string", "debug-assert", "fix-combin
 itertools = "0.4"
 
 [features]
+default = ["std"]
+# Default
+# Use libstd
+std = []
 unstable = []

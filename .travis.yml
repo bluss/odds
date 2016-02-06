@@ -4,6 +4,8 @@ matrix:
   include:
     - rust: 1.2.0
     - rust: stable
+      env:
+      - NODEFAULT=1
     - rust: beta
     - rust: nightly
       env:
@@ -14,6 +16,7 @@ branches:
 script:
   - |
       cargo build --verbose --features "$FEATURES" &&
+      ([ "$NODEFAULT" != 1 ] || cargo build --verbose --no-default-features) &&
       cargo test --verbose --features "$FEATURES" &&
       cargo test --release --verbose --features "$FEATURES" &&
       cargo doc --verbose --features "$FEATURES"

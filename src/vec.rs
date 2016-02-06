@@ -1,10 +1,15 @@
 //! Extensions to `Vec`
+//!
+//! Requires `feature="std"`
+#![cfg(feature="std")]
 
 use range::IndexRange;
 use std::ptr;
 use std::slice;
 
 /// Extra methods for `Vec<T>`
+///
+/// Requires `feature="std"`
 pub trait VecExt<T> {
     /// Remove elements in a range, and insert from an iterator in their place.
     ///
