@@ -1,6 +1,7 @@
 //! Extensions to `&str` and `String`
 //!
 use std::iter;
+#[cfg(feature="std")]
 use std::ptr;
 use std::str;
 
@@ -11,9 +12,14 @@ const TAG_CONT_U8: u8 = 0b1000_0000;
 
 /// Extra methods for `str`
 pub trait StrExt {
+    #[cfg(feature="std")]
     /// Repeat the string `n` times.
+    ///
+    /// Requires `feature="std"`
     fn rep(&self, n: usize) -> String;
 
+    #[cfg(feature="std")]
+    /// Requires `feature="std"`
     fn append(&self, s: &str) -> String;
 
     /// All non-empty prefixes
@@ -46,12 +52,14 @@ pub trait StrExt {
 }
 
 impl StrExt for str {
+    #[cfg(feature="std")]
     fn rep(&self, n: usize) -> String {
         let mut s = String::with_capacity(self.len() * n);
         s.extend((0..n).map(|_| self));
         s
     }
 
+    #[cfg(feature="std")]
     fn append(&self, s: &str) -> String {
         String::from(self) + s
     }
@@ -124,12 +132,16 @@ impl<'a> Iterator for Substrings<'a> {
     }
 }
 
+#[cfg(feature="std")]
 /// Extra methods for `String`
+///
+/// Requires `feature="std"`
 pub trait StringExt {
     /// **Panics** if `index` is out of bounds.
     fn insert_str(&mut self, index: usize, s: &str);
 }
 
+#[cfg(feature="std")]
 impl StringExt for String {
     /// **Panics** if `index` is out of bounds.
     fn insert_str(&mut self, index: usize, s: &str) {

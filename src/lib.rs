@@ -6,6 +6,10 @@
 //!
 //! The **odds** crate has the following cargo feature flags:
 //!
+//! - `std`
+//!   - Default
+//!   - Requires Rust 1.6 *to opt out of*
+//!   - Use libstd and std features.
 //! - `unstable`.
 //!   - Optional.
 //!   - Requires nightly channel.
@@ -13,6 +17,11 @@
 //!
 
 #![cfg_attr(feature="unstable", feature(unboxed_closures, fn_traits))]
+
+#![cfg_attr(not(feature="std"), no_std)]
+
+#[cfg(not(feature="std"))]
+extern crate core as std;
 
 mod range;
 mod fix;
