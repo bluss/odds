@@ -5,6 +5,8 @@ use std::iter;
 use std::ptr;
 use std::str;
 
+use IndexRange;
+
 /// Mask of the value bits of a continuation byte
 const CONT_MASK: u8 = 0b0011_1111;
 /// Value of the tag bits (tag mask is !CONT_MASK) of a continuation byte
@@ -51,6 +53,13 @@ pub trait StrExt {
     fn is_acceptable_index(&self, index: usize) -> bool;
 }
 
+/// Extension trait for `str` for string slicing without panicking
+pub trait StrSlice {
+    /// Return a slice of the string, if it is in bounds /and on character boundaries/,
+    /// otherwise return `None`
+    fn get_slice<R>(&self, r: R) -> Option<&str> where R: IndexRange;
+}
+
 impl StrExt for str {
     #[cfg(feature="std")]
     fn rep(&self, n: usize) -> String {
@@ -77,13 +86,25 @@ impl StrExt for str {
     }
 
     fn is_acceptable_index(&self, index: usize) -> bool {
-        if index == self.len() {
+        if index == 0 || index == self.len() {
             true
         } else {
             self.as_bytes().get(index).map_or(false, |byte| {
                 // check it's not a continuation byte
                 (byte & !CONT_MASK) != TAG_CONT_U8
             })
+        }
+    }
+}
+
+impl StrSlice for str {
+    fn get_slice<R>(&self, r: R) -> Option<&str> where R: IndexRange {
+        let start = r.start().unwrap_or(0);
+        let end = r.end().unwrap_or(self.len());
+        if self.is_acceptable_index(start) && self.is_acceptable_index(end) {
+            Some(&self[start..end])
+        } else {
+            None
         }
     }
 }
@@ -188,4 +209,15 @@ fn test_string_ext() {
     assert_eq!(s, t);
     s.insert_str(2, "x");
     assert_eq!(s, "αxβγabc");
+}
+
+#[test]
+fn test_slice() {
+    let t = "αβγabc";
+    assert_eq!(t.get_slice(..), Some(t));
+    assert_eq!(t.get_slice(0..t.len()), Some(t));
+    assert_eq!(t.get_slice(1..), None);
+    assert_eq!(t.get_slice(0..t.len()+1), None);
+    assert_eq!(t.get_slice(t.len()+1..), None);
+    assert_eq!(t.get_slice(t.len()..), Some(""));
 }
