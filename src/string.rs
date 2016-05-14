@@ -96,7 +96,7 @@ impl StrSlice for str {
     fn get_slice<R>(&self, r: R) -> Option<&str> where R: IndexRange {
         let start = r.start().unwrap_or(0);
         let end = r.end().unwrap_or(self.len());
-        if self.is_acceptable_index(start) && self.is_acceptable_index(end) {
+        if start <= end && self.is_acceptable_index(start) && self.is_acceptable_index(end) {
             Some(&self[start..end])
         } else {
             None
