@@ -19,6 +19,10 @@ __ http://bluss.github.io/arrayvec/doc/odds
 Recent Changes
 --------------
 
+- 0.2.14
+
+  - Fix ``get_slice`` to check ``start <= end`` as well.
+
 - 0.2.13
 
   - Add extension trait ``StrSlice`` with method ``get_slice`` that is a slicing
