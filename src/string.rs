@@ -7,11 +7,6 @@ use std::str;
 
 use IndexRange;
 
-/// Mask of the value bits of a continuation byte
-const CONT_MASK: u8 = 0b0011_1111;
-/// Value of the tag bits (tag mask is !CONT_MASK) of a continuation byte
-const TAG_CONT_U8: u8 = 0b1000_0000;
-
 /// Extra methods for `str`
 pub trait StrExt {
     #[cfg(feature="std")]
@@ -91,7 +86,7 @@ impl StrExt for str {
         } else {
             self.as_bytes().get(index).map_or(false, |byte| {
                 // check it's not a continuation byte
-                (byte & !CONT_MASK) != TAG_CONT_U8
+                *byte as i8 >= -0x40
             })
         }
     }
