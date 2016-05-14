@@ -182,8 +182,12 @@ impl StringExt for String {
 #[test]
 fn test_acc_index() {
     let s = "Abcαβγ";
-    for (ix, _) in s.char_indices() {
+    for (ix, ch) in s.char_indices() {
         assert!(s.is_acceptable_index(ix));
+        // check the continuation bytes
+        for j in 1..ch.len_utf8() {
+            assert!(!s.is_acceptable_index(ix + j));
+        }
     }
     assert!(s.is_acceptable_index(s.len()));
     let indices = [0, 1, 2, 3, 5, 7, 9];
