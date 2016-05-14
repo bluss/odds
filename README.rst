@@ -19,6 +19,11 @@ __ http://bluss.github.io/arrayvec/doc/odds
 Recent Changes
 --------------
 
+- 0.2.13
+
+  - Add extension trait ``StrSlice`` with method ``get_slice`` that is a slicing
+    method that returns an optional slice.
+
 - 0.2.12
 
   - Add default feature "std". odds uses ``no_std`` if you opt out of this
