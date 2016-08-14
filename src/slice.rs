@@ -1,3 +1,4 @@
+//! Extra functions for slices
 
 use std::ptr;
 use std::cmp::min;
