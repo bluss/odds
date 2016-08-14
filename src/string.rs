@@ -179,6 +179,122 @@ impl StringExt for String {
     }
 }
 
+/// Extension traits for the `char_chunks` and `char_windows` methods
+pub trait StrChunksWindows {
+    /// Return an iterator that splits the string in substrings of each `n`
+    /// `char` per substring. The last item will contain the remainder if
+    /// `n` does not divide the char length of the string evenly.
+    fn char_chunks(&self, n: usize) -> CharChunks;
+
+    /// Return an iterator that produces substrings of each `n`
+    /// `char` per substring in a sliding window that advances one char at a time.
+    ///
+    /// ***Panics*** if `n` is zero.
+    fn char_windows(&self, n: usize) -> CharWindows;
+}
+
+impl StrChunksWindows for str {
+    fn char_chunks(&self, n: usize) -> CharChunks {
+        CharChunks::new(self, n)
+    }
+
+    fn char_windows(&self, n: usize) -> CharWindows {
+        CharWindows::new(self, n)
+    }
+}
+
+/// An iterator that splits the string in substrings of each `n`
+/// `char` per substring. The last item will contain the remainder if
+/// `n` does not divide the char length of the string evenly.
+#[derive(Clone, Debug)]
+pub struct CharChunks<'a> {
+    s: &'a str,
+    n: usize,
+}
+
+impl<'a> CharChunks<'a> {
+    fn new(s: &'a str, n: usize) -> Self {
+        CharChunks { s: s, n: n }
+    }
+}
+
+impl<'a> Iterator for CharChunks<'a> {
+    type Item = &'a str;
+    fn next(&mut self) -> Option<&'a str> {
+        let s = self.s;
+        if s.is_empty() {
+            return None;
+        }
+        for (i, (j, ch)) in s.char_indices().enumerate() {
+            if i + 1 == self.n {
+                let (part, tail) = s.split_at(j + ch.len_utf8());
+                self.s = tail;
+                return Some(part);
+            }
+        }
+        self.s = "";
+        Some(s)
+    }
+}
+
+/// An iterator that produces substrings of each `n`
+/// `char` per substring in a sliding window that advances one char at a time.
+#[derive(Clone, Debug)]
+pub struct CharWindows<'a> {
+    s: &'a str,
+    a: usize,
+    b: usize,
+}
+
+impl<'a> CharWindows<'a> {
+    fn new(s: &'a str, n: usize) -> Self {
+        assert!(n != 0);
+        match s.char_indices().nth(n - 1) {
+            None => CharWindows { s: s, a: s.len(), b: s.len() },
+            Some((i, ch)) => CharWindows { s: s, a: 0, b: i + ch.len_utf8() }
+        }
+    }
+}
+
+fn char_get(s: &str, i: usize) -> Option<char> {
+    s[i..].chars().next()
+}
+
+impl<'a> Iterator for CharWindows<'a> {
+    type Item = &'a str;
+    fn next(&mut self) -> Option<&'a str> {
+        let elt;
+        // `a` is out of bounds when we are done
+        if let Some(c) = char_get(self.s, self.a) {
+            elt = &self.s[self.a..self.b];
+            self.a += c.len_utf8();
+        } else {
+            return None;
+        }
+        if let Some(c) = char_get(self.s, self.b) {
+            self.b += c.len_utf8();
+        } else {
+            self.a = self.s.len();
+        }
+        Some(elt)
+    }
+}
+
+#[test]
+fn str_windows() {
+    assert_eq!(CharWindows::new("abc", 4).next(), None);
+    assert_eq!(CharWindows::new("abc", 3).next(), Some("abc"));
+    assert_eq!(CharWindows::new("abc", 3).count(), 1);
+    assert_eq!(CharWindows::new("αbγ", 2).nth(0), Some("αb"));
+    assert_eq!(CharWindows::new("αbγ", 2).nth(1), Some("bγ"));
+}
+
+#[test]
+#[should_panic]
+fn str_windows_not_0() {
+    CharWindows::new("abc", 0);
+}
+
 #[test]
 fn test_acc_index() {
     let s = "Abcαβγ";
