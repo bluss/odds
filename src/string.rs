@@ -204,9 +204,9 @@ fn test_acc_index() {
 fn test_string_ext() {
     let mut s = String::new();
     let t = "αβγabc";
-    s.insert_str(0, t);
+    StringExt::insert_str(&mut s, 0, t);
     assert_eq!(s, t);
-    s.insert_str(2, "x");
+    StringExt::insert_str(&mut s, 2, "x");
     assert_eq!(s, "αxβγabc");
 }
 
