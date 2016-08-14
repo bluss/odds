@@ -2,7 +2,8 @@
 odds
 ====
 
-Odds and ends — collection miscellania.
+Odds and ends — collection miscellania. Extra functionality related to slices,
+strings and other things.
 
 Please read the `API documentation here`__
 
@@ -18,6 +19,14 @@ __ http://bluss.github.io/arrayvec/doc/odds
 
 Recent Changes
 --------------
+
+- 0.2.15
+
+  - Add ``std::slice::shared_prefix`` to efficiently compute the shared
+    prefix of two byte slices
+  - Add str extension methods ``.char_chunks(n)`` and ``char_windows(n)``
+    that are iterators that do the char-wise equivalent of slice's chunks and windows
+    iterators.
 
 - 0.2.14
 
