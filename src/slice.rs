@@ -44,8 +44,8 @@ pub fn shared_prefix(a: &[u8], b: &[u8]) -> usize {
 
 #[test]
 fn correct() {
-    let mut a = vec![0xff; 1024];
-    let b = vec![0xff; 1024];
+    let mut a = [0xff; 1024];
+    let b = [0xff; 1024];
     for byte in 0..255 { // don't test byte 255
         for i in 0..a.len() {
             a[i] = byte;
