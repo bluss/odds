@@ -27,11 +27,12 @@ mod range;
 mod fix;
 pub mod string;
 pub mod vec;
+pub mod slice;
 
 pub use fix::Fix;
 pub use range::IndexRange;
 
-use std::{slice, mem};
+use std::mem;
 
 /// Compare if **a** and **b** are equal *as pointers*.
 #[inline]
@@ -48,7 +49,7 @@ pub fn ptr_eq<T>(a: *const T, b: *const T) -> bool {
 /// Safe to use with any wholly initialized memory `ptr`
 #[inline]
 pub unsafe fn raw_byte_repr<T: ?Sized>(ptr: &T) -> &[u8] {
-    slice::from_raw_parts(
+    std::slice::from_raw_parts(
         ptr as *const _ as *const u8,
         mem::size_of_val(ptr),
     )
