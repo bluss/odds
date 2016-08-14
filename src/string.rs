@@ -227,7 +227,9 @@ impl<'a> Iterator for CharChunks<'a> {
         }
         for (i, (j, ch)) in s.char_indices().enumerate() {
             if i + 1 == self.n {
-                let (part, tail) = s.split_at(j + ch.len_utf8());
+                // FIXME: Use .split_at() when rust version allows
+                let mid = j + ch.len_utf8();
+                let (part, tail) = (&s[..mid], &s[mid..]);
                 self.s = tail;
                 return Some(part);
             }
