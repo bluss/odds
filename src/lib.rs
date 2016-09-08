@@ -30,6 +30,7 @@ pub mod vec;
 pub mod slice;
 
 pub use fix::Fix;
+pub use fix::fix;
 pub use range::IndexRange;
 
 use std::mem;
