@@ -20,6 +20,11 @@ __ http://bluss.github.io/arrayvec/doc/odds
 Recent Changes
 --------------
 
+- 0.2.16
+
+  - Add ``fix`` function that makes it much easier to use the ``Fix`` combinator.
+    Type inference works much better for the closure this way.
+
 - 0.2.15
 
   - Add ``std::slice::shared_prefix`` to efficiently compute the shared
