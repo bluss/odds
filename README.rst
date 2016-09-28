@@ -20,6 +20,14 @@ __ http://bluss.github.io/arrayvec/doc/odds
 Recent Changes
 --------------
 
+- 0.2.17
+
+  - Add ``split_aligned_for<T>`` function that splits a byte slice into
+    head and tail slices and a main slice that is a well aligned block
+    of type ``&[T]``. Where ``T`` is a pod type like for example ``u64``.
+  - Add ``Stride, StrideMut`` that moved here from itertools
+  - Add ``mend_slices`` iterator extension that moved here from itertools
+
 - 0.2.16
 
   - Add ``fix`` function that makes it much easier to use the ``Fix`` combinator.
