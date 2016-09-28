@@ -16,6 +16,7 @@
 //!   - Implement the closure traits for **Fix**.
 //!
 
+#![doc(html_root_url = "https://docs.rs/odds/0.2/")]
 #![cfg_attr(feature="unstable", feature(unboxed_closures, fn_traits))]
 
 #![cfg_attr(not(feature="std"), no_std)]
