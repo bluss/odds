@@ -4,8 +4,8 @@
 /// In **Fix\<T, R\>**, **T** is the argument type, and **R** is the return type,
 /// **R** defaults to **T**.
 ///
-/// **Fix** only supports function call notation with the nightly channel and
-/// the cargo feature ‘unstable’ enabled.
+/// Calling the `Fix` value only supports function call notation with the nightly
+/// channel and the crate feature ‘unstable’ enabled; use the .call() method otherwise.
 ///
 /// Use this best through the `fix` function.
 ///
@@ -44,9 +44,8 @@ pub struct Fix<'a, T: 'a, R: 'a = T>(pub &'a Fn(Fix<T, R>, T) -> R);
 /// In **Fix\<T, R\>**, **T** is the argument type, and **R** is the return type,
 /// **R** defaults to **T**.
 ///
-/// Calling the `Fix` value recursively only supports function call notation with the nightly
-/// channel and the cargo feature ‘unstable’ enabled. Otherwise use the .call()
-/// method.
+/// Calling the `Fix` value only supports function call notation with the nightly
+/// channel and the crate feature ‘unstable’ enabled; use the .call() method otherwise.
 ///
 /// This helper function makes the type inference work out well.
 ///

@@ -4,7 +4,7 @@
 //! - Fixpoint combinator for closures
 //! - String and Vec extensions
 //!
-//! The **odds** crate has the following cargo feature flags:
+//! The **odds** crate has the following crate feature flags:
 //!
 //! - `std`
 //!   - Default
