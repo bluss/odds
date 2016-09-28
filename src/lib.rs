@@ -29,6 +29,7 @@ mod fix;
 pub mod string;
 pub mod vec;
 pub mod slice;
+pub mod stride;
 
 pub use fix::Fix;
 pub use fix::fix;

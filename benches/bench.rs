@@ -120,3 +120,24 @@ fn memchr_mockup(pat: u8, text: &[u8]) -> Option<usize> {
         find_shorter_than::<T>(pat, c).map(|pos| pos + text.len() - c.len())
     }
 }
+
+
+
+#[bench]
+fn stride_iter(b: &mut Bencher)
+{
+    let xs = vec![1; 20];
+    b.iter(|| for elt in Stride::from_slice(&xs, 1) {
+        test::black_box(elt);
+    })
+}
+
+#[bench]
+fn stride_iter_rev(b: &mut Bencher)
+{
+    let xs = vec![1; 20];
+    b.iter(|| for elt in Stride::from_slice(&xs, 1).rev() {
+        test::black_box(elt);
+    })
+}
+
