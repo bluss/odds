@@ -305,6 +305,7 @@ fn test_split_aligned() {
  * a lot of code in vain that does not pay off when it's only 3 elements or less.
  */
 
+#[cfg(test)]
 pub fn unroll_2<'a, T, F>(data: &'a [T], mut f: F)
     where F: FnMut(&'a T)
 {
@@ -319,6 +320,7 @@ pub fn unroll_2<'a, T, F>(data: &'a [T], mut f: F)
         f(&data[0]);
     }
 }
+#[cfg(test)]
 pub fn unroll_4<'a, T, F>(data: &'a [T], mut f: F)
     where F: FnMut(&'a T)
 {
@@ -338,6 +340,7 @@ pub fn unroll_4<'a, T, F>(data: &'a [T], mut f: F)
     }
 }
 
+#[cfg(test)]
 pub fn unroll_8<'a, T, F>(data: &'a [T], mut f: F)
     where F: FnMut(&'a T)
 {
@@ -361,6 +364,7 @@ pub fn unroll_8<'a, T, F>(data: &'a [T], mut f: F)
     }
 }
 
+#[cfg(test)]
 pub fn zip_unroll_4<'a, 'b, A, B, F>(a: &'a [A], b: &'b [B], mut f: F)
     where F: FnMut(usize, &'a A, &'b B)
 {
@@ -383,6 +387,7 @@ pub fn zip_unroll_4<'a, 'b, A, B, F>(a: &'a [A], b: &'b [B], mut f: F)
     }
 }
 
+#[cfg(test)]
 pub fn zip_unroll_8<'a, 'b, A, B, F>(a: &'a [A], b: &'b [B], mut f: F)
     where F: FnMut(usize, &'a A, &'b B)
 {
