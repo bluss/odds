@@ -13,7 +13,7 @@ keywords = ["data-structure", "unchecked", "debug-assert", "fix-combinator", "no
 [dependencies]
 
 [dev-dependencies]
-itertools = "0.4"
+itertools = "0.5"
 memchr = "0.1.11"
 
 [features]
