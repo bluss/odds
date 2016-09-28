@@ -287,9 +287,8 @@ fn test_split_aligned() {
 
     let data = [0; 7];
     let (a, b, c) = split_aligned_for::<u64>(&data);
-    assert_eq!(a.len(), 7);
+    assert_eq!(a.len() + c.len(), 7);
     assert_eq!(b.len(), 0);
-    assert_eq!(c.len(), 0);
 }
 
 
