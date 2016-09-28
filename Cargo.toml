@@ -5,7 +5,7 @@ authors = ["bluss"]
 license = "MIT/Apache-2.0"
 
 description = "Odds and ends — collection miscellania. Extra functionality for slices, strings and other things. Odds for example provides debug checked variants of `get_unchecked` and `slice_unchecked`, and extra methods for strings and vectors: `repeat`, `insert_str` and `splice`. Things in odds may move to more appropriate crates if we find them."
-documentation = "http://bluss.github.io/arrayvec/doc/odds"
+documentation = "https//docs.rs/odds/"
 repository = "https://github.com/bluss/odds"
 
 keywords = ["data-structure", "unchecked", "debug-assert", "fix-combinator", "no_std"]
