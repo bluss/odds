@@ -244,7 +244,7 @@ impl_pod!{@array 0, 1, 2, 3, 4, 5, 6, 7, 8}
 ///     assert_eq!(count_ones(&vec![3u8; 127]), 127 * 2);
 /// }
 /// ```
-pub fn split_aligned_for<T>(data: &[u8]) -> (&[u8], &[T], &[u8]) {
+pub fn split_aligned_for<T: Pod>(data: &[u8]) -> (&[u8], &[T], &[u8]) {
     let ptr = data.as_ptr();
     let align_t = align_of::<T>();
     let size_t = size_of::<T>();
