@@ -2,7 +2,8 @@
 
 use std::ptr;
 use std::cmp::min;
-use std::mem;
+use std::mem::{self, align_of, size_of};
+use std::slice::from_raw_parts;
 
 /// Unaligned load of a u64 at index `i` in `buf`
 unsafe fn load_u64(buf: &[u8], i: usize) -> u64 {
@@ -197,3 +198,199 @@ impl<'a> MendSlice for &'a str {
     }
 }
 
+
+pub unsafe trait Pod : Copy { }
+macro_rules! impl_pod {
+    (@array $($e:expr),+) => {
+        $(
+        unsafe impl<T> Pod for [T; $e] where T: Pod { }
+        )+
+    };
+    ($($t:ty)+) => {
+        $(
+        unsafe impl Pod for $t { }
+        )+
+    };
+}
+impl_pod!{u8 u16 u32 u64 usize i8 i16 i32 i64 isize}
+impl_pod!{@array 0, 1, 2, 3, 4, 5, 6, 7, 8}
+
+
+pub fn split_aligned_for<T>(data: &[u8]) -> (&[u8], &[T], &[u8]) {
+    let ptr = data.as_ptr();
+    let align_t = align_of::<T>();
+    let size_t = size_of::<T>();
+    let align_ptr = ptr as usize & (align_t - 1);
+    let prefix = if align_ptr == 0 { 0 } else { align_t - align_ptr };
+    let t_len;
+
+    if prefix > data.len() {
+        t_len = 0;
+    } else {
+        t_len = (data.len() - prefix) / size_t;
+    }
+    unsafe {
+        (from_raw_parts(ptr, prefix),
+         from_raw_parts(ptr.offset(prefix as isize) as *const T, t_len),
+         from_raw_parts(ptr.offset((prefix + t_len * size_t) as isize),
+                        data.len() - t_len * size_t - prefix))
+    }
+}
+
+#[test]
+fn test_split_aligned() {
+    let data = vec![0; 1024];
+    assert_eq!(data.as_ptr() as usize & 7, 0);
+    let (a, b, c) = split_aligned_for::<u8>(&data);
+    assert_eq!(a.len(), 0);
+    assert_eq!(b.len(), data.len());
+    assert_eq!(c.len(), 0);
+
+    let (a, b, c) = split_aligned_for::<u64>(&data);
+    assert_eq!(a.len(), 0);
+    assert_eq!(b.len(), data.len() / 8);
+    assert_eq!(c.len(), 0);
+
+    let offset1 = &data[1..data.len() - 2];
+    let (a, b, c) = split_aligned_for::<u64>(offset1);
+    assert_eq!(a.len(), 7);
+    assert_eq!(b.len(), data.len() / 8 - 2);
+    assert_eq!(c.len(), 6);
+
+    let data = [0; 7];
+    let (a, b, c) = split_aligned_for::<u64>(&data);
+    assert_eq!(a.len(), 7);
+    assert_eq!(b.len(), 0);
+    assert_eq!(c.len(), 0);
+}
+
+
+/* All of these use this trick:
+ *
+    for i in 0..4 {
+        if i < data.len() {
+            f(&data[i]);
+        }
+    }
+ * The intention is that the range makes sure the compiler
+ * sees that the loop is not autovectorized or something that generates
+ * a lot of code in vain that does not pay off when it's only 3 elements or less.
+ */
+
+pub fn unroll_2<'a, T, F>(data: &'a [T], mut f: F)
+    where F: FnMut(&'a T)
+{
+    let mut data = data;
+    while data.len() >= 2 {
+        f(&data[0]);
+        f(&data[1]);
+        data = &data[2..];
+    }
+    // tail
+    if 0 < data.len() {
+        f(&data[0]);
+    }
+}
+pub fn unroll_4<'a, T, F>(data: &'a [T], mut f: F)
+    where F: FnMut(&'a T)
+{
+    let mut data = data;
+    while data.len() >= 4 {
+        f(&data[0]);
+        f(&data[1]);
+        f(&data[2]);
+        f(&data[3]);
+        data = &data[4..];
+    }
+    // tail
+    for i in 0..3 {
+        if i < data.len() {
+            f(&data[i]);
+        }
+    }
+}
+
+pub fn unroll_8<'a, T, F>(data: &'a [T], mut f: F)
+    where F: FnMut(&'a T)
+{
+    let mut data = data;
+    while data.len() >= 8 {
+        f(&data[0]);
+        f(&data[1]);
+        f(&data[2]);
+        f(&data[3]);
+        f(&data[4]);
+        f(&data[5]);
+        f(&data[6]);
+        f(&data[7]);
+        data = &data[8..];
+    }
+    // tail
+    for i in 0..7 {
+        if i < data.len() {
+            f(&data[i]);
+        }
+    }
+}
+
+pub fn zip_unroll_4<'a, 'b, A, B, F>(a: &'a [A], b: &'b [B], mut f: F)
+    where F: FnMut(usize, &'a A, &'b B)
+{
+    let len = min(a.len(), b.len());
+    let mut a = &a[..len];
+    let mut b = &b[..len];
+    while a.len() >= 4 {
+        f(0, &a[0], &b[0]);
+        f(1, &a[1], &b[1]);
+        f(2, &a[2], &b[2]);
+        f(3, &a[3], &b[3]);
+        a = &a[4..];
+        b = &b[4..];
+    }
+    // tail
+    for i in 0..3 {
+        if i < a.len() {
+            f(0, &a[i], &b[i]);
+        }
+    }
+}
+
+pub fn zip_unroll_8<'a, 'b, A, B, F>(a: &'a [A], b: &'b [B], mut f: F)
+    where F: FnMut(usize, &'a A, &'b B)
+{
+    let len = min(a.len(), b.len());
+    let mut a = &a[..len];
+    let mut b = &b[..len];
+    while a.len() >= 8 {
+        f(0, &a[0], &b[0]);
+        f(1, &a[1], &b[1]);
+        f(2, &a[2], &b[2]);
+        f(3, &a[3], &b[3]);
+        f(4, &a[4], &b[4]);
+        f(5, &a[5], &b[5]);
+        f(6, &a[6], &b[6]);
+        f(7, &a[7], &b[7]);
+        a = &a[8..];
+        b = &b[8..];
+    }
+
+    // tail
+    for i in 0..7 {
+        if i < a.len() {
+            f(0, &a[i], &b[i]);
+        }
+    }
+}
+
+#[cfg(test)]
+pub fn f64_dot(xs: &[f64], ys: &[f64]) -> f64 {
+    let mut sum = [0.; 8];
+    zip_unroll_8(xs, ys, |i, x, y| sum[i] += x * y);
+    sum[0] += sum[4];
+    sum[1] += sum[5];
+    sum[2] += sum[6];
+    sum[3] += sum[7];
+    sum[0] += sum[2];
+    sum[1] += sum[3];
+    sum[0] + sum[1]
+}
