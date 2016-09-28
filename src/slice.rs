@@ -199,6 +199,8 @@ impl<'a> MendSlice for &'a str {
 }
 
 
+/// "plain old data": Types that we can stick arbitrary bit patterns into,
+/// and thus use them as blocks in `split_aligned_for`.
 pub unsafe trait Pod : Copy { }
 macro_rules! impl_pod {
     (@array $($e:expr),+) => {
@@ -216,6 +218,32 @@ impl_pod!{u8 u16 u32 u64 usize i8 i16 i32 i64 isize}
 impl_pod!{@array 0, 1, 2, 3, 4, 5, 6, 7, 8}
 
 
+/// Split the input slice into three chunks,
+/// so that the middle chunk is a slice of a larger "block size"
+/// (for example T could be u64) that is correctly aligned for `T`.
+///
+/// The first and last returned slices are the remaining head and tail
+/// parts that could not be baked into `&[T]`
+///
+/// # Examples
+///
+/// ```
+/// extern crate odds;
+/// use odds::slice::split_aligned_for;
+///
+/// fn count_ones(data: &[u8]) -> u32 {
+///     let mut total = 0;
+///     let (head, mid, tail) = split_aligned_for::<[u64; 2]>(data);
+///     total += head.iter().map(|x| x.count_ones()).sum();
+///     total += mid.iter().map(|x| x[0].count_ones() + x[1].count_ones()).sum();
+///     total += tail.iter().map(|x| x.count_ones()).sum();
+///     total
+/// }
+///
+/// fn main() {
+///     assert_eq!(count_ones(&vec![3u8; 127]), 127 * 2);
+/// }
+/// ```
 pub fn split_aligned_for<T>(data: &[u8]) -> (&[u8], &[T], &[u8]) {
     let ptr = data.as_ptr();
     let align_t = align_of::<T>();
