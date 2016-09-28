@@ -14,6 +14,7 @@ keywords = ["data-structure", "unchecked", "debug-assert", "fix-combinator", "no
 
 [dev-dependencies]
 itertools = "0.4"
+memchr = "0.1.11"
 
 [features]
 default = ["std"]
