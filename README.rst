@@ -20,6 +20,13 @@ __ http://bluss.github.io/arrayvec/doc/odds
 Recent Changes
 --------------
 
+- 0.2.19
+
+  - Add trait ``SliceFind`` with methods ``.find(&T), .rfind(&T)`` for
+    slices.
+  - Add function ``vec(iterable) -> Vec``
+  - Add prelude module
+
 - 0.2.18
 
   - Correct ``split_aligned_for<T>`` to use the trait bound.
