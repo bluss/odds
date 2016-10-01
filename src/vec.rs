@@ -7,6 +7,15 @@ use range::IndexRange;
 use std::ptr;
 use std::slice;
 
+
+/// Create a new vec from the iterable
+pub fn vec<I>(iterable: I) -> Vec<I::Item>
+    where I: IntoIterator
+{
+    iterable.into_iter().collect()
+}
+
+
 /// Extra methods for `Vec<T>`
 ///
 /// Requires `feature="std"`
