@@ -25,17 +25,35 @@
 extern crate core as std;
 
 mod range;
-mod fix;
+#[path = "fix.rs"]
+mod fix_impl;
 pub mod string;
 pub mod vec;
 pub mod slice;
 pub mod stride;
 
-pub use fix::Fix;
-pub use fix::fix;
+pub use fix_impl::Fix;
+pub use fix_impl::fix;
 pub use range::IndexRange;
 
 use std::mem;
+
+/// prelude of often used traits and functions
+pub mod prelude {
+    pub use slice::SliceFind;
+    pub use slice::SliceIterExt;
+    pub use string::StrExt;
+    #[cfg(feature="std")]
+    pub use string::StrChunksWindows;
+    #[cfg(feature="std")]
+    pub use string::StringExt;
+    #[cfg(feature="std")]
+    pub use vec::{vec, VecExt};
+    #[doc(no_inline)]
+    pub use IndexRange;
+    #[doc(no_inline)]
+    pub use fix;
+}
 
 /// Compare if **a** and **b** are equal *as pointers*.
 #[inline]
