@@ -60,6 +60,42 @@ fn correct() {
     }
 }
 
+/// Element-finding methods for slices
+pub trait SliceFind {
+    type Item;
+    /// Linear search for the first occurrence  `elt` in the slice.
+    ///
+    /// Return its index if it is found, or None.
+    fn find<U: ?Sized>(&self, elt: &U) -> Option<usize>
+        where Self::Item: PartialEq<U>;
+
+    /// Linear search for the last occurrence  `elt` in the slice.
+    ///
+    /// Return its index if it is found, or None.
+    fn rfind<U: ?Sized>(&self, elt: &U) -> Option<usize>
+        where Self::Item: PartialEq<U>;
+}
+
+impl<T> SliceFind for [T] { 
+    type Item = T;
+    fn find<U: ?Sized>(&self, elt: &U) -> Option<usize>
+        where Self::Item: PartialEq<U>
+    {
+        self.iter().position(|x| *x == *elt)
+    }
+
+    fn rfind<U: ?Sized>(&self, elt: &U) -> Option<usize>
+        where Self::Item: PartialEq<U>
+    {
+        for i in (0..self.len()).rev() {
+            if self[i] == *elt {
+                return Some(i);
+            }
+        }
+        None
+    }
+}
+
 
 pub trait SliceIterExt : Iterator {
     /// Return an iterator adaptor that joins together adjacent slices if possible.

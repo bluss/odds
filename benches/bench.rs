@@ -8,8 +8,10 @@ extern crate itertools;
 
 use odds::slice::shared_prefix;
 use itertools::enumerate;
+use odds::stride::Stride;
 
 use test::Bencher;
+use test::black_box;
 
 #[bench]
 fn shpfx(bench: &mut Bencher) {
@@ -122,22 +124,55 @@ fn memchr_mockup(pat: u8, text: &[u8]) -> Option<usize> {
 }
 
 
+#[bench]
+fn slice_iter_pos1(b: &mut Bencher)
+{
+    let xs = black_box(vec![1; 128]);
+    b.iter(|| {
+        let mut s = 0;
+        for elt in &xs {
+            s += *elt;
+        }
+        s
+    });
+}
 
 #[bench]
-fn stride_iter(b: &mut Bencher)
+fn stride_iter_pos1(b: &mut Bencher)
 {
-    let xs = vec![1; 20];
-    b.iter(|| for elt in Stride::from_slice(&xs, 1) {
-        test::black_box(elt);
-    })
+    let xs = black_box(vec![1; 128]);
+    b.iter(|| {
+        let mut s = 0;
+        for elt in Stride::from_slice(&xs, 1) {
+            s += *elt;
+        }
+        s
+    });
 }
 
 #[bench]
 fn stride_iter_rev(b: &mut Bencher)
 {
-    let xs = vec![1; 20];
-    b.iter(|| for elt in Stride::from_slice(&xs, 1).rev() {
-        test::black_box(elt);
-    })
+    let xs = black_box(vec![1; 128]);
+    b.iter(|| {
+        let mut s = 0;
+        for elt in Stride::from_slice(&xs, 1).rev() {
+            s += *elt;
+        }
+        s
+    });
+}
+
+#[bench]
+fn stride_iter_neg1(b: &mut Bencher)
+{
+    let xs = black_box(vec![1; 128]);
+    b.iter(|| {
+        let mut s = 0;
+        for elt in Stride::from_slice(&xs, -1) {
+            s += *elt;
+        }
+        s
+    });
 }
 
