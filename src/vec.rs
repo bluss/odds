@@ -7,6 +7,8 @@ use range::IndexRange;
 use std::ptr;
 use std::slice;
 
+use slice::SliceFind;
+
 
 /// Create a new vec from the iterable
 pub fn vec<I>(iterable: I) -> Vec<I::Item>
@@ -143,6 +145,37 @@ impl<T> VecExt<T> for Vec<T> {
     }
 }
 
+pub trait VecFindRemove {
+    type Item;
+    /// Linear search for the first element equal to `elt` and remove
+    /// it if found.
+    ///
+    /// Return its index and the value itself.
+    fn find_remove<U>(&mut self, elt: &U) -> Option<(usize, Self::Item)>
+        where Self::Item: PartialEq<U>;
+
+    /// Linear search for the last element equal to `elt` and remove
+    /// it if found.
+    ///
+    /// Return its index and the value itself.
+    fn rfind_remove<U>(&mut self, elt: &U) -> Option<(usize, Self::Item)>
+        where Self::Item: PartialEq<U>;
+}
+
+impl<T> VecFindRemove for Vec<T> {
+    type Item = T;
+    fn find_remove<U>(&mut self, elt: &U) -> Option<(usize, Self::Item)>
+        where Self::Item: PartialEq<U>
+    {
+        self.find(elt).map(|i| (i, self.remove(i)))
+    }
+    fn rfind_remove<U>(&mut self, elt: &U) -> Option<(usize, Self::Item)>
+        where Self::Item: PartialEq<U>
+    {
+        self.rfind(elt).map(|i| (i, self.remove(i)))
+    }
+}
+
 #[test]
 fn test_splice() {
     use std::iter::once;
@@ -170,4 +203,13 @@ fn test_splice() {
     let mut v = vec![1, 2, 3, 4];
     v.splice(1.., Some(9));
     assert_eq!(v, &[1, 9]);
+}
+
+#[test]
+fn test_find() {
+    let mut v = vec![0, 1, 2, 3, 1, 2, 1];
+    assert_eq!(v.rfind_remove(&1), Some((6, 1)));
+    assert_eq!(v.find_remove(&2), Some((2, 2)));
+    assert_eq!(v.find_remove(&7), None);
+    assert_eq!(&v, &[0, 1, 3, 1, 2]);
 }

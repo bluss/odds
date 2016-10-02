@@ -96,6 +96,69 @@ impl<T> SliceFind for [T] {
     }
 }
 
+/// Element-finding methods for slices
+pub trait SliceFindSplit {
+    type Item;
+    /// Linear search for the first occurrence  `elt` in the slice.
+    ///
+    /// Return the part before and the part including and after the element.
+    /// If the element is not found, the second half is empty.
+    fn find_split<U: ?Sized>(&self, elt: &U) -> (&Self, &Self)
+        where Self::Item: PartialEq<U>;
+
+    /// Linear search for the last occurrence  `elt` in the slice.
+    ///
+    /// Return the part before and the part including and after the element.
+    /// If the element is not found, the first half is empty.
+    fn rfind_split<U: ?Sized>(&self, elt: &U) -> (&Self, &Self)
+        where Self::Item: PartialEq<U>;
+
+    /// Linear search for the first occurrence  `elt` in the slice.
+    ///
+    /// Return the part before and the part including and after the element.
+    /// If the element is not found, the second half is empty.
+    fn find_split_mut<U: ?Sized>(&mut self, elt: &U) -> (&mut Self, &mut Self)
+        where Self::Item: PartialEq<U>;
+
+    /// Linear search for the last occurrence  `elt` in the slice.
+    ///
+    /// Return the part before and the part including and after the element.
+    /// If the element is not found, the first half is empty.
+    fn rfind_split_mut<U: ?Sized>(&mut self, elt: &U) -> (&mut Self, &mut Self)
+        where Self::Item: PartialEq<U>;
+}
+
+impl<T> SliceFindSplit for [T] { 
+    type Item = T;
+    fn find_split<U: ?Sized>(&self, elt: &U) -> (&Self, &Self)
+        where Self::Item: PartialEq<U>
+    {
+        let i = self.find(elt).unwrap_or(self.len());
+        self.split_at(i)
+    }
+
+    fn find_split_mut<U: ?Sized>(&mut self, elt: &U) -> (&mut Self, &mut Self)
+        where Self::Item: PartialEq<U>
+    {
+        let i = self.find(elt).unwrap_or(self.len());
+        self.split_at_mut(i)
+    }
+
+    fn rfind_split<U: ?Sized>(&self, elt: &U) -> (&Self, &Self)
+        where Self::Item: PartialEq<U>
+    {
+        let i = self.rfind(elt).unwrap_or(0);
+        self.split_at(i)
+    }
+
+    fn rfind_split_mut<U: ?Sized>(&mut self, elt: &U) -> (&mut Self, &mut Self)
+        where Self::Item: PartialEq<U>
+    {
+        let i = self.rfind(elt).unwrap_or(0);
+        self.split_at_mut(i)
+    }
+}
+
 
 pub trait SliceIterExt : Iterator {
     /// Return an iterator adaptor that joins together adjacent slices if possible.
@@ -461,4 +524,12 @@ pub fn f64_dot(xs: &[f64], ys: &[f64]) -> f64 {
     sum[0] += sum[2];
     sum[1] += sum[3];
     sum[0] + sum[1]
+}
+
+#[test]
+fn test_find() {
+    let v = [0, 1, 7, 3, 1, 2, 1];
+    assert_eq!(v.find_split(&7), v.split_at(2));
+    assert_eq!(v.rfind_split(&7), v.split_at(2));
+    assert_eq!(v.rfind_split(&2), v.split_at(5));
 }
