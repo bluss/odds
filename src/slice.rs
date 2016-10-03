@@ -44,6 +44,30 @@ pub fn shared_prefix(a: &[u8], b: &[u8]) -> usize {
     len
 }
 
+/// Rotate `steps` towards lower indices.
+///
+/// The steps to rotate is computed modulo the length of `data`,
+/// so any step value is acceptable. This function does not panic.
+///
+/// ```
+/// use odds::slice::rotate;
+///
+/// let mut data = [1, 2, 3, 4];
+/// rotate(&mut data, 3);
+/// assert_eq!(&data, &[4, 1, 2, 3]);
+/// ```
+pub fn rotate<T>(data: &mut [T], steps: usize) {
+    //return rotate_alt(data, steps);
+    // no bounds checks in this method in this version
+    if data.len() == 0 {
+        return;
+    }
+    let steps = steps % data.len();
+
+    data[..steps].reverse();
+    data[steps..].reverse();
+    data.reverse();
+}
 
 #[test]
 fn correct() {
