@@ -20,6 +20,12 @@ __ http://bluss.github.io/arrayvec/doc/odds
 Recent Changes
 --------------
 
+- 0.2.20
+
+  - Add ``SliceFindSplit`` with ``.find_split, .rfind_split, .find_split_mut,``
+    ``.rfind_split_mut``.
+  - Add ``VecFindRemove`` with ``.find_remove(), .rfind_remove()``.
+
 - 0.2.19
 
   - Add trait ``SliceFind`` with methods ``.find(&T), .rfind(&T)`` for
