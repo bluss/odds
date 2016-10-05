@@ -50,13 +50,15 @@ pub fn shared_prefix(a: &[u8], b: &[u8]) -> usize {
 /// so any step value is acceptable. This function does not panic.
 ///
 /// ```
-/// use odds::slice::rotate;
+/// use odds::slice::rotate_left;
 ///
 /// let mut data = [1, 2, 3, 4];
-/// rotate(&mut data, 3);
+/// rotate_left(&mut data, 1);
+/// assert_eq!(&data, &[2, 3, 4, 1]);
+/// rotate_left(&mut data, 2);
 /// assert_eq!(&data, &[4, 1, 2, 3]);
 /// ```
-pub fn rotate<T>(data: &mut [T], steps: usize) {
+pub fn rotate_left<T>(data: &mut [T], steps: usize) {
     //return rotate_alt(data, steps);
     // no bounds checks in this method in this version
     if data.len() == 0 {

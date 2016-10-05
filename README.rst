@@ -20,6 +20,10 @@ __ http://bluss.github.io/arrayvec/doc/odds
 Recent Changes
 --------------
 
+- 0.2.21
+
+  - Add ``slice::rotate_left`` to cyclically rotate elements in a slice.
+
 - 0.2.20
 
   - Add ``SliceFindSplit`` with ``.find_split, .rfind_split, .find_split_mut,``
