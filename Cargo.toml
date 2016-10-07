@@ -22,3 +22,6 @@ default = ["std"]
 # Use libstd
 std = []
 unstable = []
+
+[profile.bench]
+debug = true

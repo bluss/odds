@@ -102,23 +102,51 @@ pub trait SliceFind {
         where Self::Item: PartialEq<U>;
 }
 
+macro_rules! foreach {
+    ($i:pat in $($e:expr),* => $b:expr) => {{
+        $(
+            let $i = $e;
+            $b;
+        )*
+    }}
+}
+
 impl<T> SliceFind for [T] { 
     type Item = T;
     fn find<U: ?Sized>(&self, elt: &U) -> Option<usize>
         where Self::Item: PartialEq<U>
     {
-        self.iter().position(|x| *x == *elt)
+        let mut xs = self;
+        let mut i = 0;
+        const C: usize = 8;
+        while xs.len() >= C {
+            foreach!(j in 0, 1, 2, 3, 4, 5, 6, 7 => {
+                if xs[j] == *elt { return Some(i + j); }
+            });
+            i += C;
+            xs = &xs[C..];
+        }
+        for j in 0..xs.len() {
+            if xs[j] == *elt {
+                return Some(i + j);
+            }
+        }
+        None
     }
 
     fn rfind<U: ?Sized>(&self, elt: &U) -> Option<usize>
         where Self::Item: PartialEq<U>
     {
-        for i in (0..self.len()).rev() {
-            if self[i] == *elt {
-                return Some(i);
-            }
+        let mut xs = self;
+        const C: usize = 8;
+        while xs.len() >= C {
+            let l = xs.len();
+            foreach!(j in 0, 1, 2, 3, 4, 5, 6, 7 => {
+                if xs[l - 1 - j] == *elt { return Some(l - 1 - j); }
+            });
+            xs = &xs[..l - C];
         }
-        None
+        xs.iter().rposition(|x| *x == *elt)
     }
 }
 
@@ -154,13 +182,24 @@ pub trait SliceFindSplit {
         where Self::Item: PartialEq<U>;
 }
 
+use slice_unchecked;
+
+
+/// Unchecked version of `xs.split_at(i)`.
+unsafe fn split_at_unchecked<T>(xs: &[T], i: usize) -> (&[T], &[T]) {
+    (slice_unchecked(xs, 0, i),
+     slice_unchecked(xs, i, xs.len()))
+}
+
 impl<T> SliceFindSplit for [T] { 
     type Item = T;
     fn find_split<U: ?Sized>(&self, elt: &U) -> (&Self, &Self)
         where Self::Item: PartialEq<U>
     {
         let i = self.find(elt).unwrap_or(self.len());
-        self.split_at(i)
+        unsafe {
+            split_at_unchecked(self, i)
+        }
     }
 
     fn find_split_mut<U: ?Sized>(&mut self, elt: &U) -> (&mut Self, &mut Self)
@@ -174,7 +213,9 @@ impl<T> SliceFindSplit for [T] {
         where Self::Item: PartialEq<U>
     {
         let i = self.rfind(elt).unwrap_or(0);
-        self.split_at(i)
+        unsafe {
+            split_at_unchecked(self, i)
+        }
     }
 
     fn rfind_split_mut<U: ?Sized>(&mut self, elt: &U) -> (&mut Self, &mut Self)
@@ -554,8 +595,8 @@ pub fn f64_dot(xs: &[f64], ys: &[f64]) -> f64 {
 
 #[test]
 fn test_find() {
-    let v = [0, 1, 7, 3, 1, 2, 1];
+    let v = [0, 1, 7, 0, 0, 2, 3, 5, 1, 5, 3, 1, 2, 1];
     assert_eq!(v.find_split(&7), v.split_at(2));
     assert_eq!(v.rfind_split(&7), v.split_at(2));
-    assert_eq!(v.rfind_split(&2), v.split_at(5));
+    assert_eq!(v.rfind_split(&2), v.split_at(v.len() - 2));
 }
