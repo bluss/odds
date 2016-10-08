@@ -227,6 +227,7 @@ impl<T> SliceFindSplit for [T] {
 }
 
 
+/// Extra iterator adaptors for iterators of slice elements.
 pub trait SliceIterExt : Iterator {
     /// Return an iterator adaptor that joins together adjacent slices if possible.
     ///
