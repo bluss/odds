@@ -20,6 +20,11 @@ __ http://bluss.github.io/arrayvec/doc/odds
 Recent Changes
 --------------
 
+- 0.2.22
+
+  - Improve slice's ``.find()`` and ``.rfind()`` and related methods
+    by explicitly unrolling their search loop.
+
 - 0.2.21
 
   - Add ``slice::rotate_left`` to cyclically rotate elements in a slice.
