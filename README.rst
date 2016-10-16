@@ -20,6 +20,11 @@ __ https://docs.rs/odds/
 Recent Changes
 --------------
 
+- 0.2.23
+
+  - Add ``RevSlice``, a reversed view of a slice
+  - Add ``encode_utf8`` for encoding chars
+
 - 0.2.22
 
   - Improve slice's ``.find()`` and ``.rfind()`` and related methods
