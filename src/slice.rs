@@ -631,6 +631,28 @@ fn test_find() {
 /// The `RevSlice` is a random accessible range of elements;
 /// it wraps a regular slice but presents the underlying elements in
 /// reverse order.
+///
+/// # Example
+/// ```
+/// use odds::slice::RevSlice;
+///
+/// let mut data = [0; 8];
+///
+/// {
+///     let mut rev = <&mut RevSlice<_>>::from(&mut data);
+///     for (i, elt) in rev.iter_mut().enumerate() {
+///         *elt = i;
+///     }
+///
+///     assert_eq!(&rev[..4], &[0, 1, 2, 3][..]);
+/// }
+/// assert_eq!(&data, &[7, 6, 5, 4, 3, 2, 1, 0]);
+/// ```
+///
+/// Not visible in rustdoc:
+///
+/// - A boxed slice can be reversed too:
+///   `impl<T> From<Box<[T]>> for Box<RevSlice<T>>`.
 #[derive(Debug, Eq)]
 #[repr(C)]
 pub struct RevSlice<T>([T]);
@@ -686,6 +708,16 @@ impl<T> RevSlice<T> {
         unsafe {
             transmute(self)
         }
+    }
+
+    /// Return a by-reference iterator
+    pub fn iter(&self) -> Rev<Iter<T>> {
+        self.into_iter()
+    }
+
+    /// Return a by-mutable-reference iterator
+    pub fn iter_mut(&mut self) -> Rev<IterMut<T>> {
+        self.into_iter()
     }
 
     pub fn split_at(&self, i: usize) -> (&Self, &Self) {
