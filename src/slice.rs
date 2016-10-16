@@ -704,6 +704,7 @@ impl<T> RevSlice<T> {
         &mut self.0
     }
 
+    #[cfg(feature = "std")]
     pub fn into_boxed_slice(self: Box<Self>) -> Box<[T]> {
         unsafe {
             transmute(self)
@@ -790,6 +791,7 @@ impl<'a, T, Slice: ?Sized> From<&'a mut Slice> for &'a mut RevSlice<T>
     }
 }
 
+#[cfg(feature = "std")]
 impl<T> From<Box<[T]>> for Box<RevSlice<T>> {
     fn from(slc: Box<[T]>) -> Self {
         unsafe {
