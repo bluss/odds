@@ -2,6 +2,7 @@
 
 use {get_unchecked, get_unchecked_mut};
 use IndexRange;
+use {slice_unchecked, slice_unchecked_mut};
 
 use std::ptr;
 use std::cmp::min;
@@ -206,8 +207,6 @@ pub trait SliceFindSplit {
     fn rfind_split_mut<U: ?Sized>(&mut self, elt: &U) -> (&mut Self, &mut Self)
         where Self::Item: PartialEq<U>;
 }
-
-use slice_unchecked;
 
 
 /// Unchecked version of `xs.split_at(i)`.
@@ -804,6 +803,24 @@ impl<T, R> Index<R> for RevSlice<T>
         let start_r = self.len() - end;
         unsafe {
             <&RevSlice<_>>::from(slice_unchecked(&self.0, start_r, end_r))
+        }
+    }
+}
+
+impl<T, R> IndexMut<R> for RevSlice<T>
+    where R: IndexRange,
+{
+    fn index_mut(&mut self, index: R) -> &mut RevSlice<T> {
+        // [0 1 2 3 4]
+        //  4 3 2 1 0
+        // [       ] <- rev 1..5  is 0..4
+        let start = index.start().unwrap_or(0);
+        let end = index.end().unwrap_or(self.len());
+        assert!(start <= end && end <= self.len());
+        let end_r = self.len() - start;
+        let start_r = self.len() - end;
+        unsafe {
+            <&mut RevSlice<_>>::from(slice_unchecked_mut(&mut self.0, start_r, end_r))
         }
     }
 }
