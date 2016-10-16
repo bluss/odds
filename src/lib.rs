@@ -27,6 +27,7 @@ extern crate core as std;
 mod range;
 #[path = "fix.rs"]
 mod fix_impl;
+pub mod char;
 pub mod string;
 pub mod vec;
 pub mod slice;
