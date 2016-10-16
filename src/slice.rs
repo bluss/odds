@@ -1,12 +1,18 @@
 //! Extra functions for slices
 
-use super::{get_unchecked, get_unchecked_mut};
+use {get_unchecked, get_unchecked_mut};
+use IndexRange;
+
 use std::ptr;
 use std::cmp::min;
 use std::mem::transmute;
 use std::mem::{self, align_of, size_of};
 use std::hash::{Hasher, Hash};
 use std::slice::from_raw_parts;
+use std::iter::Rev;
+use std::slice::{Iter, IterMut};
+
+use std::ops::{Index, IndexMut};
 
 /// Unaligned load of a u64 at index `i` in `buf`
 unsafe fn load_u64(buf: &[u8], i: usize) -> u64 {
@@ -152,6 +158,22 @@ impl<T> SliceFind for [T] {
         xs.iter().rposition(|x| *x == *elt)
     }
 }
+
+impl<T> SliceFind for RevSlice<T> {
+    type Item = T;
+    fn find<U: ?Sized>(&self, elt: &U) -> Option<usize>
+        where Self::Item: PartialEq<U>
+    {
+        self.0.rfind(elt).map(move |i| self.raw_index_no_wrap(i))
+    }
+
+    fn rfind<U: ?Sized>(&self, elt: &U) -> Option<usize>
+        where Self::Item: PartialEq<U>
+    {
+        self.0.find(elt).map(move |i| self.raw_index_no_wrap(i))
+    }
+}
+
 
 /// Element-finding methods for slices
 pub trait SliceFindSplit {
@@ -619,23 +641,30 @@ impl<T> RevSlice<T> {
         self.0.len()
     }
 
-    pub fn get(&self, i: usize) -> Option<&T> {
+    // arithmetic overflow checked in debug builds
+    fn raw_index_no_wrap(&self, i: usize) -> usize {
+        self.len() - (1 + i)
+    }
+
+    /// Return the index into the underlying slice
+    fn raw_index(&self, i: usize) -> Option<usize> {
         let (ri, oflo) = self.len().overflowing_sub(1 + i);
-        if oflo {
-            return None;
+        if !oflo {
+            Some(ri)
+        } else {
+            None
         }
+    }
+
+    pub fn get(&self, i: usize) -> Option<&T> {
         unsafe {
-            Some(get_unchecked(&self.0, ri))
+            self.raw_index(i).map(move |ri| get_unchecked(&self.0, ri))
         }
     }
 
     pub fn get_mut(&mut self, i: usize) -> Option<&mut T> {
-        let (ri, oflo) = self.len().overflowing_sub(1 + i);
-        if oflo {
-            return None;
-        }
         unsafe {
-            Some(get_unchecked_mut(&mut self.0, ri))
+            self.raw_index(i).map(move |ri| get_unchecked_mut(&mut self.0, ri))
         }
     }
 
@@ -724,8 +753,6 @@ impl<T> From<Box<[T]>> for Box<RevSlice<T>> {
     }
 }
 
-use std::ops::{Index, IndexMut};
-
 impl<T> Index<usize> for RevSlice<T> {
     type Output = T;
     fn index(&self, i: usize) -> &T {
@@ -748,8 +775,24 @@ impl<T> IndexMut<usize> for RevSlice<T> {
     }
 }
 
-use std::iter::Rev;
-use std::slice::{Iter, IterMut};
+impl<T, R> Index<R> for RevSlice<T>
+    where R: IndexRange,
+{
+    type Output = RevSlice<T>;
+    fn index(&self, index: R) -> &RevSlice<T> {
+        // [0 1 2 3 4]
+        //  4 3 2 1 0
+        // [       ] <- rev 1..5  is 0..4
+        let start = index.start().unwrap_or(0);
+        let end = index.end().unwrap_or(self.len());
+        assert!(start <= end && end <= self.len());
+        let end_r = self.len() - start;
+        let start_r = self.len() - end;
+        unsafe {
+            <&RevSlice<_>>::from(slice_unchecked(&self.0, start_r, end_r))
+        }
+    }
+}
 
 impl<'a, T> IntoIterator for &'a RevSlice<T> {
     type Item = &'a T;
@@ -795,4 +838,33 @@ fn test_rev_slice_3() {
 
     let r = <&RevSlice<_>>::from(&data[..]);
     r[!0];
+}
+
+#[test]
+fn test_rev_slice_slice() {
+    let data = [1, 2, 3, 4];
+    let rev = [4, 3, 2, 1];
+
+    let r = <&RevSlice<_>>::from(&data[..]);
+    
+    for i in 0..r.len() {
+        for j in i..r.len() {
+            println!("{:?}, {:?}", &r[i..j], &rev[i..j]);
+            assert_eq!(&r[i..j], &rev[i..j]);
+        }
+    }
+}
+
+#[test]
+fn test_rev_slice_find() {
+    let data = [1, 2, 3, 4];
+
+    let r = <&RevSlice<_>>::from(&data[..]);
+    
+    for (i, elt) in r.into_iter().enumerate() {
+        assert_eq!(r.find(elt), Some(i));
+    }
+    for (i, elt) in r.into_iter().enumerate() {
+        assert_eq!(r.rfind(elt), Some(i));
+    }
 }
