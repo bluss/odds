@@ -664,15 +664,15 @@ impl<T> RevSlice<T> {
     }
 
     // arithmetic overflow checked in debug builds
+    #[inline]
     fn raw_index_no_wrap(&self, i: usize) -> usize {
         self.len() - (1 + i)
     }
 
-    /// Return the index into the underlying slice
+    /// Return the index into the underlying slice, if it's in bounds
     fn raw_index(&self, i: usize) -> Option<usize> {
-        let (ri, oflo) = self.len().overflowing_sub(1 + i);
-        if !oflo {
-            Some(ri)
+        if i < self.len() {
+            Some(self.raw_index_no_wrap(i))
         } else {
             None
         }
