@@ -7,7 +7,7 @@ strings and other things.
 
 Please read the `API documentation here`__
 
-__ http://bluss.github.io/arrayvec/doc/odds
+__ https://docs.rs/odds/
 
 |build_status|_ |crates|_
 
