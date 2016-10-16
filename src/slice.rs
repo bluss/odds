@@ -629,14 +629,15 @@ fn test_find() {
 
 /// A reversed view of a slice.
 ///
-/// The `RevSlice` is a random accessible slice that shows the
-/// reverse order of the elements inside.
+/// The `RevSlice` is a random accessible range of elements;
+/// it wraps a regular slice but presents the underlying elements in
+/// reverse order.
 #[derive(Debug, Eq)]
 #[repr(C)]
 pub struct RevSlice<T>([T]);
 
 impl<T> RevSlice<T> {
-    /// Length.
+    /// Return the length of the slice.
     pub fn len(&self) -> usize {
         self.0.len()
     }
@@ -656,12 +657,18 @@ impl<T> RevSlice<T> {
         }
     }
 
+    /// Get element at index `i`.
+    ///
+    /// See also indexing notation: `&foo[i]`.
     pub fn get(&self, i: usize) -> Option<&T> {
         unsafe {
             self.raw_index(i).map(move |ri| get_unchecked(&self.0, ri))
         }
     }
 
+    /// Get element at index `i`.
+    ///
+    /// See also indexing notation: `&mut foo[i]`.
     pub fn get_mut(&mut self, i: usize) -> Option<&mut T> {
         unsafe {
             self.raw_index(i).map(move |ri| get_unchecked_mut(&mut self.0, ri))
@@ -681,24 +688,31 @@ impl<T> RevSlice<T> {
             transmute(self)
         }
     }
+
+    pub fn split_at(&self, i: usize) -> (&Self, &Self) {
+        assert!(i <= self.len());
+        let ri = self.len() - i;
+        let (a, b) = self.0.split_at(ri);
+        (<_>::from(b), <_>::from(a))
+    }
+
+    pub fn split_at_mut(&mut self, i: usize) -> (&mut Self, &mut Self) {
+        assert!(i <= self.len());
+        let ri = self.len() - i;
+        let (a, b) = self.0.split_at_mut(ri);
+        (<_>::from(b), <_>::from(a))
+    }
 }
 
 impl<T, U> PartialEq<RevSlice<U>> for RevSlice<T>
     where T: PartialEq<U>,
 {
     fn eq(&self, rhs: &RevSlice<U>) -> bool {
-        if self.len() != rhs.len() {
-            return false;
-        }
-        for (x, y) in self.0.iter().zip(&rhs.0) {
-            if x != y {
-                return false;
-            }
-        }
-        true
+        self.0 == rhs.0
     }
 }
 
+/// `RevSlice` compares by logical element sequence.
 impl<T, U> PartialEq<[U]> for RevSlice<T>
     where T: PartialEq<U>,
 {
@@ -866,5 +880,18 @@ fn test_rev_slice_find() {
     }
     for (i, elt) in r.into_iter().enumerate() {
         assert_eq!(r.rfind(elt), Some(i));
+    }
+}
+
+#[test]
+fn test_rev_slice_split() {
+    let data = [1, 2, 3, 4];
+
+    let r = <&RevSlice<_>>::from(&data[..]);
+
+    for i in 0..r.len() {
+        let (a, b) = r.split_at(i);
+        assert_eq!(a, &r[..i]);
+        assert_eq!(b, &r[i..]);
     }
 }
