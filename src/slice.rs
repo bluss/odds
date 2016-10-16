@@ -820,6 +820,18 @@ impl<T> IndexMut<usize> for RevSlice<T> {
     }
 }
 
+impl<'a, T> Default for &'a RevSlice<T> {
+    fn default() -> Self {
+        Self::from(&[])
+    }
+}
+
+impl<'a, T> Default for &'a mut RevSlice<T> {
+    fn default() -> Self {
+        Self::from(&mut [])
+    }
+}
+
 impl<T, R> Index<R> for RevSlice<T>
     where R: IndexRange,
 {
