@@ -1,8 +1,11 @@
 //! Extra functions for slices
 
+use super::{get_unchecked, get_unchecked_mut};
 use std::ptr;
 use std::cmp::min;
+use std::mem::transmute;
 use std::mem::{self, align_of, size_of};
+use std::hash::{Hasher, Hash};
 use std::slice::from_raw_parts;
 
 /// Unaligned load of a u64 at index `i` in `buf`
@@ -600,4 +603,196 @@ fn test_find() {
     assert_eq!(v.find_split(&7), v.split_at(2));
     assert_eq!(v.rfind_split(&7), v.split_at(2));
     assert_eq!(v.rfind_split(&2), v.split_at(v.len() - 2));
+}
+
+/// A reversed view of a slice.
+///
+/// The `RevSlice` is a random accessible slice that shows the
+/// reverse order of the elements inside.
+#[derive(Debug, Eq)]
+#[repr(C)]
+pub struct RevSlice<T>([T]);
+
+impl<T> RevSlice<T> {
+    /// Length.
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+
+    pub fn get(&self, i: usize) -> Option<&T> {
+        let (ri, oflo) = self.len().overflowing_sub(1 + i);
+        if oflo {
+            return None;
+        }
+        unsafe {
+            Some(get_unchecked(&self.0, ri))
+        }
+    }
+
+    pub fn get_mut(&mut self, i: usize) -> Option<&mut T> {
+        let (ri, oflo) = self.len().overflowing_sub(1 + i);
+        if oflo {
+            return None;
+        }
+        unsafe {
+            Some(get_unchecked_mut(&mut self.0, ri))
+        }
+    }
+
+    pub fn inner_ref(&self) -> &[T] {
+        &self.0
+    }
+
+    pub fn inner_mut(&mut self) -> &mut [T] {
+        &mut self.0
+    }
+
+    pub fn into_boxed_slice(self: Box<Self>) -> Box<[T]> {
+        unsafe {
+            transmute(self)
+        }
+    }
+}
+
+impl<T, U> PartialEq<RevSlice<U>> for RevSlice<T>
+    where T: PartialEq<U>,
+{
+    fn eq(&self, rhs: &RevSlice<U>) -> bool {
+        if self.len() != rhs.len() {
+            return false;
+        }
+        for (x, y) in self.0.iter().zip(&rhs.0) {
+            if x != y {
+                return false;
+            }
+        }
+        true
+    }
+}
+
+impl<T, U> PartialEq<[U]> for RevSlice<T>
+    where T: PartialEq<U>,
+{
+    fn eq(&self, rhs: &[U]) -> bool {
+        if self.len() != rhs.len() {
+            return false;
+        }
+        for (x, y) in self.into_iter().zip(rhs) {
+            if x != y {
+                return false;
+            }
+        }
+        true
+    }
+}
+
+impl<T> Hash for RevSlice<T>
+    where T: Hash,
+{
+    fn hash<H: Hasher>(&self, h: &mut H) {
+        for elt in self {
+            elt.hash(h)
+        }
+    }
+}
+
+impl<'a, T, Slice: ?Sized> From<&'a Slice> for &'a RevSlice<T>
+    where Slice: AsRef<[T]>
+{
+    fn from(slc: &'a Slice) -> Self {
+        unsafe {
+            transmute(slc.as_ref())
+        }
+    }
+}
+
+impl<'a, T, Slice: ?Sized> From<&'a mut Slice> for &'a mut RevSlice<T>
+    where Slice: AsMut<[T]>
+{
+    fn from(slc: &'a mut Slice) -> Self {
+        unsafe {
+            transmute(slc.as_mut())
+        }
+    }
+}
+
+impl<T> From<Box<[T]>> for Box<RevSlice<T>> {
+    fn from(slc: Box<[T]>) -> Self {
+        unsafe {
+            transmute(slc)
+        }
+    }
+}
+
+use std::ops::{Index, IndexMut};
+
+impl<T> Index<usize> for RevSlice<T> {
+    type Output = T;
+    fn index(&self, i: usize) -> &T {
+        if let Some(x) = self.get(i) {
+            x
+        } else {
+            panic!("Index {} is out of bounds for RevSlice of length {}", i, self.len());
+        }
+    }
+}
+
+impl<T> IndexMut<usize> for RevSlice<T> {
+    fn index_mut(&mut self, i: usize) -> &mut T {
+        let len = self.len();
+        if let Some(x) = self.get_mut(i) {
+            return x;
+        } else {
+            panic!("Index {} is out of bounds for RevSlice of length {}", i, len);
+        }
+    }
+}
+
+use std::iter::Rev;
+use std::slice::{Iter, IterMut};
+
+impl<'a, T> IntoIterator for &'a RevSlice<T> {
+    type Item = &'a T;
+    type IntoIter = Rev<Iter<'a, T>>;
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.iter().rev()
+    }
+}
+
+impl<'a, T> IntoIterator for &'a mut RevSlice<T> {
+    type Item = &'a mut T;
+    type IntoIter = Rev<IterMut<'a, T>>;
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.iter_mut().rev()
+    }
+}
+
+#[test]
+fn test_rev_slice_1() {
+    let data = [1, 2, 3, 4];
+    let rev = [4, 3, 2, 1];
+
+    assert_eq!(<&RevSlice<_>>::from(&data[..]), &rev[..]);
+    assert!(<&RevSlice<_>>::from(&data[..]) != &data[..]);
+    let r = <&RevSlice<_>>::from(&data[..]);
+    assert_eq!(r[0], rev[0]);
+    assert_eq!(r[3], rev[3]);
+}
+
+#[should_panic]
+#[test]
+fn test_rev_slice_2() {
+    let data = [1, 2, 3, 4];
+
+    let r = <&RevSlice<_>>::from(&data[..]);
+    r[4];
+}
+
+#[should_panic]
+#[test]
+fn test_rev_slice_3() {
+    let data = [1, 2, 3, 4];
+
+    let r = <&RevSlice<_>>::from(&data[..]);
+    r[!0];
 }
