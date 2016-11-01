@@ -20,6 +20,10 @@ __ https://docs.rs/odds/
 Recent Changes
 --------------
 
+- 0.2.24
+  
+  - Add ``CharStr``
+
 - 0.2.23
 
   - Add ``RevSlice``, a reversed view of a slice

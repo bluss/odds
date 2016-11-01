@@ -1,6 +1,6 @@
 [package]
 name = "odds"
-version = "0.2.23"
+version = "0.2.24"
 authors = ["bluss"]
 license = "MIT/Apache-2.0"
 
