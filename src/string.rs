@@ -4,6 +4,7 @@ use std::iter;
 #[cfg(feature="std")]
 use std::ptr;
 use std::str;
+use std::ops::Deref;
 
 use IndexRange;
 
@@ -280,6 +281,39 @@ impl<'a> Iterator for CharWindows<'a> {
         }
         Some(elt)
     }
+}
+
+/// A single-char string.
+pub struct CharStr {
+    buf: [u8; 4],
+    len: u32,
+}
+
+impl CharStr {
+    /// Create a new string from `c`.
+    pub fn new(c: char) -> CharStr {
+        let mut self_ = CharStr {
+            buf: [0; 4],
+            len: c.len_utf8() as u32,
+        };
+        let _ = ::char::encode_utf8(c, &mut self_.buf);
+        self_
+    }
+}
+
+impl Deref for CharStr {
+    type Target = str;
+    fn deref(&self) -> &str {
+        unsafe {
+            str::from_utf8_unchecked(&self.buf[..self.len as usize])
+        }
+    }
+}
+
+#[test]
+fn test_char_str() {
+    let s = CharStr::new('α');
+    assert_eq!(&s[..], "α");
 }
 
 #[test]
