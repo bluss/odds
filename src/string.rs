@@ -284,6 +284,7 @@ impl<'a> Iterator for CharWindows<'a> {
 }
 
 /// A single-char string.
+#[derive(Copy, Clone, Debug)]
 pub struct CharStr {
     buf: [u8; 4],
     len: u32,
