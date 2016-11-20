@@ -71,11 +71,22 @@ impl<'a, T> UnalignedIter<'a, T> {
     pub fn has_tail(&self) -> bool {
         self.ptr != self.tail_end
     }
+
+    /// Return the next iterator element, without stepping the iterator.
+    pub fn peek_next(&self) -> Option<T> {
+        if self.ptr != self.end {
+            unsafe {
+                Some(load_unaligned(self.ptr))
+            }
+        } else {
+            None
+        }
+    }
 }
 
 unsafe fn load_unaligned<T>(p: *const u8) -> T {
     let mut x = uninitialized();
-    ptr::copy_nonoverlapping(p, &mut x as *mut _ as *mut u8, 8);
+    ptr::copy_nonoverlapping(p, &mut x as *mut _ as *mut u8, size_of::<T>());
     x
 }
 
