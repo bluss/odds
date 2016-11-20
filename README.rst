@@ -20,6 +20,12 @@ __ https://docs.rs/odds/
 Recent Changes
 --------------
 
+- 0.2.25
+
+  - Add ``UnalignedIter``
+  - Add ``SliceCopyIter``
+  - ``CharStr`` now implements more traits.
+
 - 0.2.24
   
   - Add ``CharStr``
