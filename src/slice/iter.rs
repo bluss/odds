@@ -65,6 +65,14 @@ impl<'a, T> Iterator for SliceCopyIter<'a, T>
         let len = (self.end as usize - self.ptr as usize) / size_of::<T>();
         (len, Some(len))
     }
+
+    fn count(self) -> usize {
+        self.len()
+    }
+
+    fn last(mut self) -> Option<Self::Item> {
+        self.next_back()
+    }
 }
 
 impl<'a, T> DoubleEndedIterator for SliceCopyIter<'a, T>
@@ -85,3 +93,27 @@ impl<'a, T> DoubleEndedIterator for SliceCopyIter<'a, T>
 }
 
 impl<'a, T> ExactSizeIterator for SliceCopyIter<'a, T> where T: Copy { }
+
+impl<'a, T> From<&'a [T]> for SliceCopyIter<'a, T>
+    where T: Copy
+{
+    fn from(slice: &'a [T]) -> Self {
+        assert!(size_of::<T>() != 0);
+        unsafe {
+            let ptr = slice.as_ptr();
+            let end = ptr.offset(slice.len() as isize);
+            SliceCopyIter::new(ptr, end)
+        }
+    }
+}
+
+impl<'a, T> Default for SliceCopyIter<'a, T>
+    where T: Copy
+{
+    /// Create an empty `SliceCopyIter`.
+    fn default() -> Self {
+        unsafe {
+            SliceCopyIter::new(0x1 as *const T, 0x1 as *const T)
+        }
+    }
+}
