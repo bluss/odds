@@ -1,5 +1,8 @@
 //! Extra functions for slices
 
+pub mod unalign;
+pub mod iter;
+
 use {get_unchecked, get_unchecked_mut};
 use IndexRange;
 use {slice_unchecked, slice_unchecked_mut};
@@ -391,7 +394,7 @@ impl<'a> MendSlice for &'a str {
 
 
 /// "plain old data": Types that we can stick arbitrary bit patterns into,
-/// and thus use them as blocks in `split_aligned_for`.
+/// and thus use them as blocks in `split_aligned_for` or in `UnalignedIter`.
 pub unsafe trait Pod : Copy { }
 macro_rules! impl_pod {
     (@array $($e:expr),+) => {
@@ -406,7 +409,7 @@ macro_rules! impl_pod {
     };
 }
 impl_pod!{u8 u16 u32 u64 usize i8 i16 i32 i64 isize}
-impl_pod!{@array 0, 1, 2, 3, 4, 5, 6, 7, 8}
+impl_pod!{@array 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}
 
 
 /// Split the input slice into three chunks,
