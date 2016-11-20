@@ -41,7 +41,6 @@ pub fn shared_prefix(a: &[u8], b: &[u8]) -> usize {
             let d0 = a0 ^ b0;
             let d1 = a1 ^ b1;
             if d0 ^ d1 != 0 {
-            //if d0 != 0 || d1 != 0 {
                 break;
             }
         }

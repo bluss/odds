@@ -8,7 +8,7 @@ extern crate itertools;
 
 #[macro_use] extern crate lazy_static;
 
-use std::mem::{size_of};
+use std::mem::{size_of, size_of_val};
 use test::Bencher;
 use test::black_box;
 
@@ -18,18 +18,55 @@ use odds::slice::shared_prefix;
 use odds::stride::Stride;
 use odds::slice::unalign::UnalignedIter;
 
+#[bench]
+fn find_word_memcmp_ascii(b: &mut Bencher) {
+    let words = &*WORDS_ASCII;
+    let word = b"the";
+    b.iter(|| {
+        words.iter().map(|w|
+            (w.as_bytes() == &word[..]) as usize
+        ).sum::<usize>()
+    });
+    b.bytes = words.iter().map(|w| w.len() as u64).sum::<u64>()
+}
+
+#[bench]
+fn find_word_shpfx_ascii(b: &mut Bencher) {
+    let words = &*WORDS_ASCII;
+    let word = b"the";
+    b.iter(|| {
+        words.iter().map(|w|
+            (shared_prefix(w.as_bytes(), &word[..]) == word.len()) as usize
+        ).sum::<usize>()
+    });
+    b.bytes = words.iter().map(|w| w.len() as u64).sum::<u64>()
+}
+
 
 #[bench]
 fn shpfx(bench: &mut Bencher) {
-    let a = vec![0; 64 * 1024 * 1024];
-    let mut b = vec![0; 64 * 1024 * 1024];
+    let a = vec![0u8; 64 * 1024 * 1024];
+    let mut b = vec![0u8; 64 * 1024 * 1024];
     const OFF: usize = 47 * 1024 * 1024;
     b[OFF] = 1;
 
     bench.iter(|| {
         shared_prefix(&a, &b);
     });
-    bench.bytes = OFF as u64;
+    bench.bytes = size_of_val(&b[..OFF]) as u64;
+}
+
+#[bench]
+fn shpfx_memcmp(bench: &mut Bencher) {
+    let a = vec![0u8; 64 * 1024 * 1024];
+    let mut b = vec![0u8; 64 * 1024 * 1024];
+    const OFF: usize = 47 * 1024 * 1024;
+    b[OFF] = 1;
+
+    bench.iter(|| {
+        &a[..] == &b[..]
+    });
+    bench.bytes = size_of_val(&b[..OFF]) as u64;
 }
 
 #[bench]
@@ -40,9 +77,22 @@ fn shpfx_short(bench: &mut Bencher) {
     b[OFF] = 1;
 
     bench.iter(|| {
-        shared_prefix(&a, &b);
+        shared_prefix(&a, &b)
     });
-    bench.bytes = OFF as u64;
+    bench.bytes = size_of_val(&b[..OFF]) as u64;
+}
+
+#[bench]
+fn shpfx_memcmp_short(bench: &mut Bencher) {
+    let a = vec![0u8; 64 * 1024];
+    let mut b = vec![0u8; 64 * 1024];
+    const OFF: usize = 47 * 1024;
+    b[OFF] = 1;
+
+    bench.iter(|| {
+        &a[..] == &b[..]
+    });
+    bench.bytes = size_of_val(&b[..OFF]) as u64;
 }
 
 fn bench_data() -> Vec<u8> { vec![b'z'; 10_000] }
