@@ -8,8 +8,8 @@ use std::ptr;
 use slice::Pod;
 use slice::iter::SliceCopyIter;
 
-/// An iterator of `T` (by value) where each value read using an
-/// unaligned load.
+/// An iterator of `T` (by value) where each value read from a pointer
+/// that is (possibly) unaligned.
 ///
 /// See also the method `.tail()`.
 #[derive(Debug)]
