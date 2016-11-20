@@ -73,7 +73,7 @@ impl<'a, T> UnalignedIter<'a, T> {
     }
 
     /// Return the next iterator element, without stepping the iterator.
-    pub fn peek_next(&self) -> Option<T> {
+    pub fn peek_next(&self) -> Option<T> where T: Copy {
         if self.ptr != self.end {
             unsafe {
                 Some(load_unaligned(self.ptr))
@@ -84,7 +84,7 @@ impl<'a, T> UnalignedIter<'a, T> {
     }
 }
 
-unsafe fn load_unaligned<T>(p: *const u8) -> T {
+unsafe fn load_unaligned<T>(p: *const u8) -> T where T: Copy {
     let mut x = uninitialized();
     ptr::copy_nonoverlapping(p, &mut x as *mut _ as *mut u8, size_of::<T>());
     x
