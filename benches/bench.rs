@@ -204,10 +204,12 @@ fn memchr_unalign(pat: u8, text: &[u8]) -> Option<usize> {
     {
         let tail = iter.tail();
         let block_len = text.len() - tail.len();
-        for (j, byte) in tail.enumerate() {
-            if byte == pat {
+        let mut j = 0;
+        while j < tail.len() {
+            if tail[j] == pat {
                 return Some(block_len + j);
             }
+            j += 1;
         }
         None
     }
