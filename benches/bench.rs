@@ -196,7 +196,7 @@ fn memchr_unalign(pat: u8, text: &[u8]) -> Option<usize> {
     while let Some(block) = iter.peek_next() {
         let f1 = contains_zero_byte(rep ^ block[0]);
         let f2 = contains_zero_byte(rep ^ block[1]);
-        if f1 || f2 {
+        if f1 | f2 {
             break;
         }
         iter.next();
@@ -204,10 +204,12 @@ fn memchr_unalign(pat: u8, text: &[u8]) -> Option<usize> {
     {
         let tail = iter.tail();
         let block_len = text.len() - tail.len();
-        for (j, byte) in tail.enumerate() {
-            if byte == pat {
+        let mut j = 0;
+        while j < tail.len() {
+            if tail[j] == pat {
                 return Some(block_len + j);
             }
+            j += 1;
         }
         None
     }

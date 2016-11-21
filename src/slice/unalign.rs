@@ -1,3 +1,4 @@
+//! An iterator for (possibly unaligned) blocking of byte ranges
 
 
 use std::mem::size_of;

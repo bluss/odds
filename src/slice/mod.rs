@@ -1,7 +1,8 @@
 //! Extra functions for slices
 
-pub mod unalign;
+pub mod blocked;
 pub mod iter;
+pub mod unalign;
 
 use {get_unchecked, get_unchecked_mut};
 use IndexRange;
@@ -138,12 +139,7 @@ impl<T> SliceFind for [T] {
             i += C;
             xs = &xs[C..];
         }
-        for j in 0..xs.len() {
-            if xs[j] == *elt {
-                return Some(i + j);
-            }
-        }
-        None
+        xs.iter().position(|x| *x == *elt).map(|j| i + j)
     }
 
     fn rfind<U: ?Sized>(&self, elt: &U) -> Option<usize>

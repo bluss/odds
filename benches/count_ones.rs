@@ -25,6 +25,12 @@ fn unalign_count_ones(data: &[u8]) -> u32 {
     total
 }
 
+fn bytewise_count_ones(data: &[u8]) -> u32 {
+    let mut total = 0;
+    total += data.iter().map(|x| x.count_ones()).sum();
+    total
+}
+
 #[bench]
 fn split_count_ones(b: &mut Bencher) {
     let v = vec![3u8; 127];
@@ -39,6 +45,15 @@ fn bench_unalign_count_ones(b: &mut Bencher) {
     let v = vec![3u8; 127];
     b.iter(|| {
         unalign_count_ones(&v)
+    });
+    b.bytes = size_of_val(&v[..]) as u64;
+}
+
+#[bench]
+fn bench_bytewise_count_ones(b: &mut Bencher) {
+    let v = vec![3u8; 127];
+    b.iter(|| {
+        bytewise_count_ones(&v)
     });
     b.bytes = size_of_val(&v[..]) as u64;
 }

@@ -16,6 +16,7 @@ keywords = ["data-structure", "debug-assert", "slice", "string", "no_std"]
 itertools = "0.5.1"
 memchr = "0.1.11"
 lazy_static = "0.2.2"
+quickcheck = { version = "0.4", default-features = false }
 
 [features]
 default = ["std"]
