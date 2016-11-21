@@ -5,7 +5,7 @@ use std::mem::size_of;
 use std::marker::PhantomData;
 use std::slice::from_raw_parts;
 
-use slice::iter::SliceCopyIter;
+use slice::iter::{SliceIter};
 
 pub unsafe trait Block {
     type Item;
@@ -92,7 +92,7 @@ impl<'a, B, T> BlockedIter<'a, B, T>
         }
     }
 
-    /// Return an iterator of the remaining tail;
+    /// Return a slice of the remaining tail;
     /// this can be called at any time, but in particular when the iterator
     /// has returned None.
     pub fn tail_slice(&self) -> &'a [T] {
@@ -101,19 +101,13 @@ impl<'a, B, T> BlockedIter<'a, B, T>
         }
     }
 
-    /// Return the tail
-    pub fn tail_copy_iter(&self) -> SliceCopyIter<'a, T>
-        where T: Copy
-    {
+    /// Return an iterator of the remaining tail;
+    /// this can be called at any time, but in particular when the iterator
+    /// has returned None.
+    #[inline(always)]
+    pub fn tail(&self) -> SliceIter<'a, T> {
         unsafe {
-            SliceCopyIter::new(self.ptr, self.tail_end)
-        }
-    }
-
-    /// Return just the uneven tail
-    pub fn strict_tail(&self) -> &'a [T] {
-        unsafe {
-            from_raw_parts(self.end, ptrdistance(self.end, self.tail_end))
+            SliceIter::new(self.ptr, self.tail_end)
         }
     }
 
