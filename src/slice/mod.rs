@@ -85,9 +85,9 @@ pub fn rotate_left<T>(data: &mut [T], steps: usize) {
 }
 
 #[test]
-fn correct() {
-    let mut a = [0xff; 1024];
-    let b = [0xff; 1024];
+fn test_shared_prefix() {
+    let mut a = [0xff; 256];
+    let b = [0xff; 256];
     for byte in 0..255 { // don't test byte 255
         for i in 0..a.len() {
             a[i] = byte;
