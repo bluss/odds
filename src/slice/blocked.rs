@@ -1,3 +1,4 @@
+//! Blocked iterator
 
 
 use std::mem::size_of;
@@ -29,7 +30,13 @@ macro_rules! impl_pod {
 impl_pod!{@array 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}
 
 
-/// See also the method `.tail()`.
+/// An iterator that yields blocks out of the underlying data's range.
+///
+/// A block is a fixed size array of `T`, and each iteration yields a
+/// reference to the next block.
+///
+/// See also the tail methods, that provide access to the rest of the elements,
+/// if they count not be dividied evenly into blocks.
 #[derive(Debug)]
 pub struct BlockedIter<'a, B: 'a, T: 'a> {
     ptr: *const T,

@@ -1,3 +1,4 @@
+//! A slice iterator for copy elements.
 
 use std::mem::size_of;
 use std::marker::PhantomData;
