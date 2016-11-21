@@ -163,6 +163,8 @@ impl<'a, T> Clone for SliceIter<'a, T> {
 
 impl<'a, T> SliceIter<'a, T> {
     /// Create a new slice iterator
+    ///
+    /// See also ``SliceIter::from, SliceIter::default``.
     #[inline]
     pub unsafe fn new(ptr: *const T, end: *const T) -> Self {
         assert!(size_of::<T>() != 0);
