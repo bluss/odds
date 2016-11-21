@@ -1,7 +1,8 @@
 //! Extra functions for slices
 
-pub mod unalign;
+pub mod blocked;
 pub mod iter;
+pub mod unalign;
 
 use {get_unchecked, get_unchecked_mut};
 use IndexRange;
