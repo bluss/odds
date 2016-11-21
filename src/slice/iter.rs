@@ -117,3 +117,17 @@ impl<'a, T> Default for SliceCopyIter<'a, T>
         }
     }
 }
+
+use std::ops::Index;
+
+impl<'a, T> Index<usize> for SliceCopyIter<'a, T>
+    where T: Copy
+{
+    type Output = T;
+    fn index(&self, i: usize) -> &T {
+        assert!(i < self.len());
+        unsafe {
+            &*self.ptr.offset(i as isize)
+        }
+    }
+}
