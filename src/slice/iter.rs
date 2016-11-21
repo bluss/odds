@@ -182,6 +182,18 @@ impl<'a, T> SliceIter<'a, T> {
     pub fn end(&self) -> *const T {
         self.end
     }
+
+    /// Return the next iterator element, without stepping the iterator.
+    pub fn peek_next(&self) -> Option<<Self as Iterator>::Item>
+    {
+        if self.ptr != self.end {
+            unsafe {
+                Some(&*self.ptr)
+            }
+        } else {
+            None
+        }
+    }
 }
 
 impl<'a, T> Iterator for SliceIter<'a, T> {
