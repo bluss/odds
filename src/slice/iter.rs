@@ -226,6 +226,24 @@ impl<'a, T> Iterator for SliceIter<'a, T> {
         self.next_back()
     }
 
+    fn all<F>(&mut self, mut predicate: F) -> bool
+        where F: FnMut(Self::Item) -> bool,
+    {
+        self.fold_while(true, move |_, elt| {
+            if predicate(elt) {
+                FoldWhile::Continue(true)
+            } else {
+                FoldWhile::Done(false)
+            }
+        })
+    }
+
+    fn any<F>(&mut self, mut predicate: F) -> bool
+        where F: FnMut(Self::Item) -> bool,
+    {
+        !self.all(move |x| !predicate(x))
+    }
+
     fn find<F>(&mut self, mut predicate: F) -> Option<Self::Item>
         where F: FnMut(&Self::Item) -> bool,
     {
