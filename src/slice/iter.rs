@@ -230,12 +230,12 @@ impl<'a, T> Iterator for SliceIter<'a, T> {
         where F: FnMut(&Self::Item) -> bool,
     {
         macro_rules! find_step {
-            () => {
+            () => {{
                 let elt = &*self.ptr.post_increment();
                 if p(&elt) {
                     return Some(elt);
                 }
-            }
+            }}
         }
         unsafe {
             while ptrdistance(self.ptr, self.end) >= 4 {
@@ -256,12 +256,12 @@ impl<'a, T> Iterator for SliceIter<'a, T> {
     {
         let start = self.ptr;
         macro_rules! find_step {
-            () => {
+            () => {{
                 let elt = &*self.ptr.post_increment();
                 if p(&elt) {
                     return Some(ptrdistance(start, elt));
                 }
-            }
+            }}
         }
         unsafe {
             while ptrdistance(self.ptr, self.end) >= 4 {
