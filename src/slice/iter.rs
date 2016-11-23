@@ -235,7 +235,7 @@ impl<'a, T> Iterator for SliceIter<'a, T> {
             } else {
                 FoldWhile::Continue(None)
             }
-        }).into_inner()
+        })
     }
 
     fn position<F>(&mut self, mut predicate: F) -> Option<usize>
@@ -248,7 +248,7 @@ impl<'a, T> Iterator for SliceIter<'a, T> {
             } else {
                 FoldWhile::Continue(None)
             }
-        }).into_inner()
+        })
     }
 }
 
@@ -370,7 +370,9 @@ impl<T> FoldWhile<T> {
 }
 
 trait FoldWhileExt : Iterator {
-    fn fold_while<Acc, G>(&mut self, init: Acc, g: G) -> FoldWhile<Acc>
+    // Note: For composability (if used with adaptors, return type
+    // should be FoldWhile<Acc> then instead.)
+    fn fold_while<Acc, G>(&mut self, init: Acc, g: G) -> Acc
         where Self: Sized,
               G: FnMut(Acc, Self::Item) -> FoldWhile<Acc>;
 }
@@ -379,13 +381,13 @@ macro_rules! try_fold_while {
     ($e:expr) => {
         match $e {
             FoldWhile::Continue(t) => t,
-            done @ FoldWhile::Done(_) => return done,
+            FoldWhile::Done(done) => return done,
         }
     }
 }
 
 impl<'a, T> FoldWhileExt for SliceIter<'a, T> {
-    fn fold_while<Acc, G>(&mut self, init: Acc, mut g: G) -> FoldWhile<Acc>
+    fn fold_while<Acc, G>(&mut self, init: Acc, mut g: G) -> Acc
         where Self: Sized,
               G: FnMut(Acc, Self::Item) -> FoldWhile<Acc>
     {
@@ -402,6 +404,6 @@ impl<'a, T> FoldWhileExt for SliceIter<'a, T> {
                 accum = try_fold_while!(g(accum, &*self.ptr.post_increment()));
             }
         }
-        FoldWhile::Continue(accum)
+        accum
     }
 }
