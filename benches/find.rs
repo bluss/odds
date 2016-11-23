@@ -114,3 +114,32 @@ fn rfind_split_loop_u8(bench: &mut Bencher) {
     });
     bench.bytes = size_of_val(&b[..]) as u64;
 }
+
+
+use odds::slice::iter::SliceIter;
+
+// The loop bench wants to test a find/scan loop where there are many
+// short intervals
+#[bench]
+fn iterator_find_split_loop_u8(bench: &mut Bencher) {
+    let mut b = vec![0u8; 512];
+
+    for i in cloned(FIND_SKIP).cycle().scan(0, |st, x| { *st += x; Some(*st) }) {
+        if i >= b.len() { break; }
+        b[i] = 1;
+    }
+
+    bench.iter(|| {
+        let mut nfind = 0;
+        let mut slc = SliceIter::from(&b[..]);
+        loop {
+            if let Some(_) =  slc.find(|x| **x == 1) {
+                nfind += 1;
+            } else {
+                break;
+            }
+        }
+        nfind
+    });
+    bench.bytes = size_of_val(&b[..]) as u64;
+}
