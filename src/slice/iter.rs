@@ -226,55 +226,29 @@ impl<'a, T> Iterator for SliceIter<'a, T> {
         self.next_back()
     }
 
-    fn find<F>(&mut self, mut p: F) -> Option<Self::Item>
+    fn find<F>(&mut self, mut predicate: F) -> Option<Self::Item>
         where F: FnMut(&Self::Item) -> bool,
     {
-        macro_rules! find_step {
-            () => {{
-                let elt = &*self.ptr.post_increment();
-                if p(&elt) {
-                    return Some(elt);
-                }
-            }}
-        }
-        unsafe {
-            while ptrdistance(self.ptr, self.end) >= 4 {
-                find_step!();
-                find_step!();
-                find_step!();
-                find_step!();
+        self.fold_while(None, move |_, elt| {
+            if predicate(&elt) {
+                FoldWhile::Done(Some(elt))
+            } else {
+                FoldWhile::Continue(None)
             }
-            while self.ptr != self.end {
-                find_step!();
-            }
-        }
-        None
+        }).into_inner()
     }
 
-    fn position<F>(&mut self, mut p: F) -> Option<usize>
+    fn position<F>(&mut self, mut predicate: F) -> Option<usize>
         where F: FnMut(Self::Item) -> bool,
     {
         let start = self.ptr;
-        macro_rules! find_step {
-            () => {{
-                let elt = &*self.ptr.post_increment();
-                if p(&elt) {
-                    return Some(ptrdistance(start, elt));
-                }
-            }}
-        }
-        unsafe {
-            while ptrdistance(self.ptr, self.end) >= 4 {
-                find_step!();
-                find_step!();
-                find_step!();
-                find_step!();
+        self.fold_while(None, move |_, elt| {
+            if predicate(elt) {
+                FoldWhile::Done(Some(ptrdistance(start, elt)))
+            } else {
+                FoldWhile::Continue(None)
             }
-            while self.ptr != self.end {
-                find_step!();
-            }
-        }
-        None
+        }).into_inner()
     }
 }
 
@@ -372,5 +346,62 @@ impl<T> PointerExt for *mut T {
     #[inline(always)]
     unsafe fn offset(self, i: isize) -> Self {
         self.offset(i)
+    }
+}
+
+
+#[derive(Copy, Clone, Debug)]
+/// An enum used for controlling the execution of `.fold_while()`.
+pub enum FoldWhile<T> {
+    /// Continue folding with this value
+    Continue(T),
+    /// Fold is complete and will return this value
+    Done(T),
+}
+
+impl<T> FoldWhile<T> {
+    /// Return the inner value.
+    pub fn into_inner(self) -> T {
+        match self {
+            FoldWhile::Continue(t) => t,
+            FoldWhile::Done(t) => t,
+        }
+    }
+}
+
+trait FoldWhileExt : Iterator {
+    fn fold_while<Acc, G>(&mut self, init: Acc, g: G) -> FoldWhile<Acc>
+        where Self: Sized,
+              G: FnMut(Acc, Self::Item) -> FoldWhile<Acc>;
+}
+
+macro_rules! try_fold_while {
+    ($e:expr) => {
+        match $e {
+            FoldWhile::Continue(t) => t,
+            done @ FoldWhile::Done(_) => return done,
+        }
+    }
+}
+
+impl<'a, T> FoldWhileExt for SliceIter<'a, T> {
+    fn fold_while<Acc, G>(&mut self, init: Acc, mut g: G) -> FoldWhile<Acc>
+        where Self: Sized,
+              G: FnMut(Acc, Self::Item) -> FoldWhile<Acc>
+    {
+
+        let mut accum = init;
+        unsafe {
+            while ptrdistance(self.ptr, self.end) >= 4 {
+                accum = try_fold_while!(g(accum, &*self.ptr.post_increment()));
+                accum = try_fold_while!(g(accum, &*self.ptr.post_increment()));
+                accum = try_fold_while!(g(accum, &*self.ptr.post_increment()));
+                accum = try_fold_while!(g(accum, &*self.ptr.post_increment()));
+            }
+            while self.ptr != self.end {
+                accum = try_fold_while!(g(accum, &*self.ptr.post_increment()));
+            }
+        }
+        FoldWhile::Continue(accum)
     }
 }
