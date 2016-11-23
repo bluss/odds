@@ -5,6 +5,7 @@ extern crate quickcheck;
 extern crate odds;
 
 use odds::slice::unalign::UnalignedIter;
+use odds::slice::iter::SliceIter;
 
 
 quickcheck! {
@@ -49,5 +50,32 @@ quickcheck! {
         let data = &v[..v.len() - offset];
 
         data.rfind(&pat) == data.iter().rposition(|x| *x == pat)
+    }
+}
+
+// SliceIter
+quickcheck! {
+    fn slice_iter_find(v: Vec<i8>, offset: u8, pat: i8) -> bool {
+        // use offset for a random alignment of the data
+        if v.len() == 0 {
+            return true;
+        }
+        let offset = offset as usize % v.len();
+        let data = &v[offset..];
+
+        data.iter().find(|x| **x == pat) ==
+            SliceIter::from(data).find(|x| **x == pat)
+    }
+
+    fn slice_iter_position(v: Vec<i8>, offset: u8, pat: i8) -> bool {
+        // use offset for a random alignment of the data
+        if v.len() == 0 {
+            return true;
+        }
+        let offset = offset as usize % v.len();
+        let data = &v[offset..];
+
+        data.iter().position(|x| *x == pat) ==
+            SliceIter::from(data).position(|x| *x == pat)
     }
 }

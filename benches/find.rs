@@ -118,6 +118,30 @@ fn rfind_split_loop_u8(bench: &mut Bencher) {
 
 use odds::slice::iter::SliceIter;
 
+#[bench]
+fn iter_find_split(bench: &mut Bencher) {
+    let mut b = vec![0u8; 64 * 1024];
+    const OFF: usize = 32 * 1024;
+    b[OFF] = 1;
+
+    bench.iter(|| {
+        SliceIter::from(&b[..]).find(|x| **x == 1)
+    });
+    bench.bytes = OFF as u64 * size_of_val(&b[0]) as u64;
+}
+
+#[bench]
+fn iter_position(bench: &mut Bencher) {
+    let mut b = vec![0u8; 64 * 1024];
+    const OFF: usize = 32 * 1024;
+    b[OFF] = 1;
+
+    bench.iter(|| {
+        SliceIter::from(&b[..]).position(|x| *x == 1)
+    });
+    bench.bytes = OFF as u64 * size_of_val(&b[0]) as u64;
+}
+
 // The loop bench wants to test a find/scan loop where there are many
 // short intervals
 #[bench]

@@ -225,6 +225,62 @@ impl<'a, T> Iterator for SliceIter<'a, T> {
     fn last(mut self) -> Option<Self::Item> {
         self.next_back()
     }
+
+    fn find<F>(&mut self, mut p: F) -> Option<Self::Item>
+        where F: FnMut(&Self::Item) -> bool,
+    {
+        macro_rules! find_step {
+            () => {
+                let elt = &*self.ptr.post_increment();
+                if p(&elt) {
+                    return Some(elt);
+                }
+            }
+        }
+        unsafe {
+            while ptrdistance(self.ptr, self.end) >= 4 {
+                find_step!();
+                find_step!();
+                find_step!();
+                find_step!();
+            }
+            while self.ptr != self.end {
+                find_step!();
+            }
+        }
+        None
+    }
+
+    fn position<F>(&mut self, mut p: F) -> Option<usize>
+        where F: FnMut(Self::Item) -> bool,
+    {
+        let start = self.ptr;
+        macro_rules! find_step {
+            () => {
+                let elt = &*self.ptr.post_increment();
+                if p(&elt) {
+                    return Some(ptrdistance(start, elt));
+                }
+            }
+        }
+        unsafe {
+            while ptrdistance(self.ptr, self.end) >= 4 {
+                find_step!();
+                find_step!();
+                find_step!();
+                find_step!();
+            }
+            while self.ptr != self.end {
+                find_step!();
+            }
+        }
+        None
+    }
+}
+
+#[inline(always)]
+fn ptrdistance<T>(a: *const T, b: *const T) -> usize {
+    (b as usize - a as usize) / size_of::<T>()
 }
 
 impl<'a, T> DoubleEndedIterator for SliceIter<'a, T> {
@@ -270,5 +326,51 @@ impl<'a, T> Index<usize> for SliceIter<'a, T> {
         unsafe {
             &*self.ptr.offset(i as isize)
         }
+    }
+}
+
+
+
+/// Extension methods for raw pointers
+pub trait PointerExt : Copy {
+    unsafe fn offset(self, i: isize) -> Self;
+
+    /// Increment by 1
+    #[inline(always)]
+    unsafe fn inc(&mut self) {
+        *self = self.offset(1);
+    }
+
+    /// Increment the pointer by 1, but return its old value.
+    unsafe fn post_increment(&mut self) -> Self {
+        let current = *self;
+        *self = self.offset(1);
+        current
+    }
+
+    /// Decrement by 1
+    #[inline(always)]
+    unsafe fn dec(&mut self) {
+        *self = self.offset(-1);
+    }
+
+    /// Offset by `s` multiplied by `index`.
+    #[inline(always)]
+    unsafe fn stride_offset(self, s: isize, index: usize) -> Self {
+        self.offset(s * index as isize)
+    }
+}
+
+impl<T> PointerExt for *const T {
+    #[inline(always)]
+    unsafe fn offset(self, i: isize) -> Self {
+        self.offset(i)
+    }
+}
+
+impl<T> PointerExt for *mut T {
+    #[inline(always)]
+    unsafe fn offset(self, i: isize) -> Self {
+        self.offset(i)
     }
 }
