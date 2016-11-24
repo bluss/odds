@@ -32,6 +32,7 @@ pub mod string;
 pub mod vec;
 pub mod slice;
 pub mod stride;
+pub mod pointer;
 
 pub use fix_impl::Fix;
 pub use fix_impl::fix;

@@ -4,7 +4,7 @@ use std::mem::size_of;
 use std::marker::PhantomData;
 use std::ops::Index;
 
-use super::ptrdistance;
+use pointer::ptrdistance;
 
 /// Slice (contiguous data) iterator.
 ///

@@ -6,7 +6,7 @@ use std::marker::PhantomData;
 use std::slice::from_raw_parts;
 
 use slice::iter::{SliceIter};
-use super::ptrdistance;
+use pointer::ptrdistance;
 
 pub unsafe trait Block {
     type Item;
