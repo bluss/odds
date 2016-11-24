@@ -78,4 +78,11 @@ quickcheck! {
         data.iter().position(|x| *x == pat) ==
             SliceIter::from(data).position(|x| *x == pat)
     }
+
+    fn slice_iter_all(v: Vec<i8>) -> bool {
+        v.iter().all(|x| *x == 0) == SliceIter::from(&v[..]).all(|x| *x == 0)
+    }
+    fn slice_iter_any(v: Vec<i8>) -> bool {
+        v.iter().any(|x| *x == 0) == SliceIter::from(&v[..]).any(|x| *x == 0)
+    }
 }
