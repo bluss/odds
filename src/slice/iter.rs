@@ -441,14 +441,7 @@ impl<'a, T> FoldWhileExt for SliceIter<'a, T> {
                 accum = fold_while!(g(accum, &*self.ptr.post_inc()));
                 accum = fold_while!(g(accum, &*self.ptr.post_inc()));
             }
-            let dist = ptrdistance(self.ptr, self.end);
-            if dist >= 3 {
-                accum = fold_while!(g(accum, &*self.ptr.post_inc()));
-            }
-            if dist >= 2 {
-                accum = fold_while!(g(accum, &*self.ptr.post_inc()));
-            }
-            if dist >= 1 {
+            while self.ptr != self.end {
                 accum = fold_while!(g(accum, &*self.ptr.post_inc()));
             }
         }
@@ -467,14 +460,7 @@ impl<'a, T> FoldWhileExt for SliceIter<'a, T> {
                 accum = fold_while!(g(accum, &*self.end.pre_dec()));
                 accum = fold_while!(g(accum, &*self.end.pre_dec()));
             }
-            let dist = ptrdistance(self.ptr, self.end);
-            if dist >= 3 {
-                accum = fold_while!(g(accum, &*self.end.pre_dec()));
-            }
-            if dist >= 2 {
-                accum = fold_while!(g(accum, &*self.end.pre_dec()));
-            }
-            if dist >= 1 {
+            while self.ptr != self.end {
                 accum = fold_while!(g(accum, &*self.end.pre_dec()));
             }
         }
