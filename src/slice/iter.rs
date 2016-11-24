@@ -334,7 +334,7 @@ pub trait PointerExt : Copy {
     }
 
     /// Increment the pointer by 1, but return its old value.
-    unsafe fn post_increment(&mut self) -> Self {
+    unsafe fn post_inc(&mut self) -> Self {
         let current = *self;
         *self = self.offset(1);
         current
@@ -413,20 +413,20 @@ impl<'a, T> FoldWhileExt for SliceIter<'a, T> {
         let mut accum = init;
         unsafe {
             while ptrdistance(self.ptr, self.end) >= 4 {
-                accum = fold_while!(g(accum, &*self.ptr.post_increment()));
-                accum = fold_while!(g(accum, &*self.ptr.post_increment()));
-                accum = fold_while!(g(accum, &*self.ptr.post_increment()));
-                accum = fold_while!(g(accum, &*self.ptr.post_increment()));
+                accum = fold_while!(g(accum, &*self.ptr.post_inc()));
+                accum = fold_while!(g(accum, &*self.ptr.post_inc()));
+                accum = fold_while!(g(accum, &*self.ptr.post_inc()));
+                accum = fold_while!(g(accum, &*self.ptr.post_inc()));
             }
             let dist = ptrdistance(self.ptr, self.end);
             if dist >= 3 {
-                accum = fold_while!(g(accum, &*self.ptr.post_increment()));
+                accum = fold_while!(g(accum, &*self.ptr.post_inc()));
             }
             if dist >= 2 {
-                accum = fold_while!(g(accum, &*self.ptr.post_increment()));
+                accum = fold_while!(g(accum, &*self.ptr.post_inc()));
             }
             if dist >= 1 {
-                accum = fold_while!(g(accum, &*self.ptr.post_increment()));
+                accum = fold_while!(g(accum, &*self.ptr.post_inc()));
             }
         }
         accum
