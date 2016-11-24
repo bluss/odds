@@ -6,6 +6,7 @@ use std::marker::PhantomData;
 use std::slice::from_raw_parts;
 
 use slice::iter::{SliceIter};
+use super::ptrdistance;
 
 pub unsafe trait Block {
     type Item;
@@ -127,12 +128,6 @@ impl<'a, B, T> BlockedIter<'a, B, T>
             None
         }
     }
-}
-
-/// return the number of steps from a to b
-#[inline(always)]
-fn ptrdistance<T>(a: *const T, b: *const T) -> usize {
-    (b as usize - a as usize) / size_of::<T>()
 }
 
 impl<'a, B, T> Iterator for BlockedIter<'a, B, T>

@@ -4,6 +4,8 @@ use std::mem::size_of;
 use std::marker::PhantomData;
 use std::ops::Index;
 
+use super::ptrdistance;
+
 /// Slice (contiguous data) iterator.
 ///
 /// Iterator element type is `T` (by value).
@@ -281,11 +283,6 @@ impl<'a, T> Iterator for SliceIter<'a, T> {
             }
         })
     }
-}
-
-#[inline(always)]
-fn ptrdistance<T>(a: *const T, b: *const T) -> usize {
-    (b as usize - a as usize) / size_of::<T>()
 }
 
 impl<'a, T> DoubleEndedIterator for SliceIter<'a, T> {

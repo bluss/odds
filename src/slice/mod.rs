@@ -94,6 +94,11 @@ fn test_shared_prefix() {
     }
 }
 
+#[inline(always)]
+fn ptrdistance<T>(start: *const T, end: *const T) -> usize {
+    (end as usize - start as usize) / size_of::<T>()
+}
+
 /// Element-finding methods for slices
 pub trait SliceFind {
     type Item;
