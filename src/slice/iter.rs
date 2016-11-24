@@ -395,7 +395,7 @@ trait FoldWhileExt : Iterator {
               G: FnMut(Acc, Self::Item) -> FoldWhile<Acc>;
 }
 
-macro_rules! try_fold_while {
+macro_rules! fold_while {
     ($e:expr) => {
         match $e {
             FoldWhile::Continue(t) => t,
@@ -413,20 +413,20 @@ impl<'a, T> FoldWhileExt for SliceIter<'a, T> {
         let mut accum = init;
         unsafe {
             while ptrdistance(self.ptr, self.end) >= 4 {
-                accum = try_fold_while!(g(accum, &*self.ptr.post_increment()));
-                accum = try_fold_while!(g(accum, &*self.ptr.post_increment()));
-                accum = try_fold_while!(g(accum, &*self.ptr.post_increment()));
-                accum = try_fold_while!(g(accum, &*self.ptr.post_increment()));
+                accum = fold_while!(g(accum, &*self.ptr.post_increment()));
+                accum = fold_while!(g(accum, &*self.ptr.post_increment()));
+                accum = fold_while!(g(accum, &*self.ptr.post_increment()));
+                accum = fold_while!(g(accum, &*self.ptr.post_increment()));
             }
             let dist = ptrdistance(self.ptr, self.end);
             if dist >= 3 {
-                accum = try_fold_while!(g(accum, &*self.ptr.post_increment()));
+                accum = fold_while!(g(accum, &*self.ptr.post_increment()));
             }
             if dist >= 2 {
-                accum = try_fold_while!(g(accum, &*self.ptr.post_increment()));
+                accum = fold_while!(g(accum, &*self.ptr.post_increment()));
             }
             if dist >= 1 {
-                accum = try_fold_while!(g(accum, &*self.ptr.post_increment()));
+                accum = fold_while!(g(accum, &*self.ptr.post_increment()));
             }
         }
         accum
