@@ -204,9 +204,7 @@ impl<'a, T> Iterator for SliceIter<'a, T> {
     fn next(&mut self) -> Option<Self::Item> {
         if self.ptr != self.end {
             unsafe {
-                let elt = Some(&*self.ptr);
-                self.ptr = self.ptr.offset(1);
-                elt
+                Some(&*self.ptr.post_inc())
             }
         } else {
             None
@@ -280,8 +278,7 @@ impl<'a, T> DoubleEndedIterator for SliceIter<'a, T> {
     fn next_back(&mut self) -> Option<Self::Item> {
         if self.ptr != self.end {
             unsafe {
-                self.end = self.end.offset(-1);
-                Some(&*self.end)
+                Some(&*self.end.pre_dec())
             }
         } else {
             None
@@ -334,10 +331,18 @@ pub trait PointerExt : Copy {
     }
 
     /// Increment the pointer by 1, but return its old value.
+    #[inline(always)]
     unsafe fn post_inc(&mut self) -> Self {
         let current = *self;
         *self = self.offset(1);
         current
+    }
+
+    /// Increment the pointer by 1, but return its old value.
+    #[inline(always)]
+    unsafe fn pre_dec(&mut self) -> Self {
+        *self = self.offset(-1);
+        *self
     }
 
     /// Decrement by 1
