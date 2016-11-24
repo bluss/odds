@@ -267,6 +267,20 @@ impl<'a, T> Iterator for SliceIter<'a, T> {
             }
         })
     }
+
+    fn rposition<F>(&mut self, mut predicate: F) -> Option<usize>
+        where F: FnMut(Self::Item) -> bool,
+    {
+        let mut index = self.len();
+        self.rfold_while(None, move |_, elt| {
+            index -= 1;
+            if predicate(elt) {
+                FoldWhile::Done(Some(index))
+            } else {
+                FoldWhile::Continue(None)
+            }
+        })
+    }
 }
 
 #[inline(always)]
@@ -399,6 +413,9 @@ trait FoldWhileExt : Iterator {
     fn fold_while<Acc, G>(&mut self, init: Acc, g: G) -> Acc
         where Self: Sized,
               G: FnMut(Acc, Self::Item) -> FoldWhile<Acc>;
+    fn rfold_while<Acc, G>(&mut self, accum: Acc, g: G) -> Acc
+        where Self: Sized,
+              G: FnMut(Acc, Self::Item) -> FoldWhile<Acc>;
 }
 
 macro_rules! fold_while {
@@ -433,6 +450,32 @@ impl<'a, T> FoldWhileExt for SliceIter<'a, T> {
             }
             if dist >= 1 {
                 accum = fold_while!(g(accum, &*self.ptr.post_inc()));
+            }
+        }
+        accum
+    }
+
+    fn rfold_while<Acc, G>(&mut self, mut accum: Acc, mut g: G) -> Acc
+        where Self: Sized,
+              G: FnMut(Acc, Self::Item) -> FoldWhile<Acc>
+    {
+        // manual unrolling is needed when there are conditional exits from the loop's body.
+        unsafe {
+            while ptrdistance(self.ptr, self.end) >= 4 {
+                accum = fold_while!(g(accum, &*self.end.pre_dec()));
+                accum = fold_while!(g(accum, &*self.end.pre_dec()));
+                accum = fold_while!(g(accum, &*self.end.pre_dec()));
+                accum = fold_while!(g(accum, &*self.end.pre_dec()));
+            }
+            let dist = ptrdistance(self.ptr, self.end);
+            if dist >= 3 {
+                accum = fold_while!(g(accum, &*self.end.pre_dec()));
+            }
+            if dist >= 2 {
+                accum = fold_while!(g(accum, &*self.end.pre_dec()));
+            }
+            if dist >= 1 {
+                accum = fold_while!(g(accum, &*self.end.pre_dec()));
             }
         }
         accum
