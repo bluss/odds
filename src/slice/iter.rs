@@ -257,11 +257,12 @@ impl<'a, T> Iterator for SliceIter<'a, T> {
     fn position<F>(&mut self, mut predicate: F) -> Option<usize>
         where F: FnMut(Self::Item) -> bool,
     {
-        let start = self.ptr;
+        let mut index = 0;
         self.fold_while(None, move |_, elt| {
             if predicate(elt) {
-                FoldWhile::Done(Some(ptrdistance(start, elt)))
+                FoldWhile::Done(Some(index))
             } else {
+                index += 1;
                 FoldWhile::Continue(None)
             }
         })
