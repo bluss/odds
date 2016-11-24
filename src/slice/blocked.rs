@@ -42,7 +42,6 @@ impl_pod!{@array 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}
 pub struct BlockedIter<'a, B: 'a, T: 'a> {
     ptr: *const T,
     end: *const T,
-    tail_end: *const T,
     ty1: PhantomData<&'a T>,
     ty2: PhantomData<&'a B>,
 }
@@ -66,7 +65,6 @@ impl<'a, B, T> BlockedIter<'a, B, T>
         BlockedIter {
             ptr: ptr,
             end: end,
-            tail_end: end,
             ty: PhantomData,
         }
     }
@@ -80,13 +78,10 @@ impl<'a, B, T> BlockedIter<'a, B, T>
         unsafe {
             let ptr = data.as_ptr();
             let len = data.len();
-            let sz = B::capacity() as isize;
-            let end_block = ptr.offset(len as isize / sz * sz);
             let end = ptr.offset(len as isize);
             BlockedIter {
                 ptr: ptr,
-                end: end_block,
-                tail_end: end,
+                end: end,
                 ty1: PhantomData,
                 ty2: PhantomData,
             }
@@ -98,7 +93,7 @@ impl<'a, B, T> BlockedIter<'a, B, T>
     /// has returned None.
     pub fn tail_slice(&self) -> &'a [T] {
         unsafe {
-            from_raw_parts(self.ptr, ptrdistance(self.ptr, self.tail_end))
+            from_raw_parts(self.ptr, ptrdistance(self.ptr, self.end))
         }
     }
 
@@ -108,19 +103,19 @@ impl<'a, B, T> BlockedIter<'a, B, T>
     #[inline(always)]
     pub fn tail(&self) -> SliceIter<'a, T> {
         unsafe {
-            SliceIter::new(self.ptr, self.tail_end)
+            SliceIter::new(self.ptr, self.end)
         }
     }
 
     /// Return `true` if the tail is not empty.
     pub fn has_tail(&self) -> bool {
-        self.ptr != self.tail_end
+        self.ptr != self.end
     }
 
     /// Return the next iterator element, without stepping the iterator.
     pub fn peek_next(&self) -> Option<<Self as Iterator>::Item>
     {
-        if self.ptr != self.end {
+        if ptrdistance(self.ptr, self.end) >= B::capacity() {
             unsafe {
                 Some(&*(self.ptr as *const B))
             }
@@ -135,7 +130,7 @@ impl<'a, B, T> Iterator for BlockedIter<'a, B, T>
 {
     type Item = &'a B;
     fn next(&mut self) -> Option<Self::Item> {
-        if self.ptr != self.end {
+        if ptrdistance(self.ptr, self.end) >= B::capacity() {
             unsafe {
                 let elt = Some(&*(self.ptr as *const B));
                 self.ptr = self.ptr.offset(B::capacity() as isize);
