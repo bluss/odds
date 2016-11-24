@@ -36,8 +36,8 @@ impl_pod!{@array 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}
 /// A block is a fixed size array of `T`, and each iteration yields a
 /// reference to the next block.
 ///
-/// See also the tail methods, that provide access to the rest of the elements,
-/// if they count not be dividied evenly into blocks.
+/// See also the tail methods that provide access to the rest of the elements
+/// that did not go up evenly into a block.
 #[derive(Debug)]
 pub struct BlockedIter<'a, B: 'a, T: 'a> {
     ptr: *const T,
@@ -70,9 +70,9 @@ impl<'a, B, T> BlockedIter<'a, B, T>
     }
     */
 
-    /// Create an `BlockedIter` out of the slice of data, which
-    /// iterates first in blocks of `T` (unaligned loads), and
-    /// then leaves a tail of the remaining bytes.
+    /// Create an `BlockedIter` out of the slice of data, which iterates first
+    /// in blocks of `T`, and then leaves a tail of the remaining
+    /// elements.
     pub fn from_slice(data: &'a [T]) -> Self {
         assert!(size_of::<T>() != 0);
         unsafe {
