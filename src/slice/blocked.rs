@@ -88,15 +88,6 @@ impl<'a, B, T> BlockedIter<'a, B, T>
         }
     }
 
-    /// Return a slice of the remaining tail;
-    /// this can be called at any time, but in particular when the iterator
-    /// has returned None.
-    pub fn tail_slice(&self) -> &'a [T] {
-        unsafe {
-            from_raw_parts(self.ptr, ptrdistance(self.ptr, self.end))
-        }
-    }
-
     /// Return an iterator of the remaining tail;
     /// this can be called at any time, but in particular when the iterator
     /// has returned None.
@@ -173,11 +164,11 @@ fn test_blocked() {
     assert_eq!(iter.next(), Some(&[0, 1]));
     assert_eq!(iter.next(), Some(&[2, 3]));
     assert_eq!(iter.next(), None);
-    assert_eq!(iter.tail_slice(), &[4]);
+    assert_eq!(iter.tail().as_slice(), &[4]);
 
     let mut iter = BlockedIter::<[u32; 8], _>::from_slice(&data);
     assert_eq!(iter.next(), None);
-    assert_eq!(iter.tail_slice(), &data);
+    assert_eq!(iter.tail().as_slice(), &data);
 }
 
 #[test]
