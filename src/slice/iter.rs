@@ -3,6 +3,7 @@
 use std::mem::size_of;
 use std::marker::PhantomData;
 use std::ops::Index;
+use std::slice;
 
 use pointer::ptrdistance;
 
@@ -198,6 +199,12 @@ impl<'a, T> SliceIter<'a, T> {
             None
         }
     }
+
+    pub fn as_slice(&self) -> &'a [T] {
+        unsafe {
+            slice::from_raw_parts(self.ptr, self.len())
+        }
+    }
 }
 
 impl<'a, T> Iterator for SliceIter<'a, T> {
@@ -214,7 +221,7 @@ impl<'a, T> Iterator for SliceIter<'a, T> {
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
-        let len = (self.end as usize - self.ptr as usize) / size_of::<T>();
+        let len = self.len();
         (len, Some(len))
     }
 
@@ -298,7 +305,11 @@ impl<'a, T> DoubleEndedIterator for SliceIter<'a, T> {
     }
 }
 
-impl<'a, T> ExactSizeIterator for SliceIter<'a, T> { }
+impl<'a, T> ExactSizeIterator for SliceIter<'a, T> {
+    fn len(&self) -> usize {
+        ptrdistance(self.ptr, self.end)
+    }
+}
 
 impl<'a, T> From<&'a [T]> for SliceIter<'a, T> {
     fn from(slice: &'a [T]) -> Self {
