@@ -179,3 +179,52 @@ fn iterator_find_split_loop_u8(bench: &mut Bencher) {
     });
     bench.bytes = size_of_val(&b[..]) as u64;
 }
+
+
+// A find / unroll using blocked iter
+
+use odds::slice::blocked::BlockedIter;
+
+macro_rules! foreach {
+    ($i:pat in $($e:expr),* => $b:expr) => {{
+        $(
+            let $i = $e;
+            $b;
+        )*
+    }}
+}
+
+fn block_position<T, U: ?Sized>(data: &[T], elt: &U) -> Option<usize>
+    where T: PartialEq<U>
+{
+    const C: usize = 4;
+    let mut iter = BlockedIter::<[_; C], _>::from_slice(data);
+    let mut index = 0;
+    for block in &mut iter {
+        foreach!(i in 0, 1, 2, 3 => {
+            if block[i] == *elt {
+                return Some(index);
+            }
+            index += 1;
+        });
+    }
+    for x in iter.tail() {
+        if *x == *elt {
+            return Some(index);
+        }
+        index += 1;
+    }
+    None
+}
+
+#[bench]
+fn blocked_iter_position(bench: &mut Bencher) {
+    let mut b = vec![0u8; 64 * 1024];
+    const OFF: usize = 32 * 1024;
+    b[OFF] = 1;
+
+    bench.iter(|| {
+        block_position(&b, &1)
+    });
+    bench.bytes = OFF as u64 * size_of_val(&b[0]) as u64;
+}

@@ -119,37 +119,20 @@ macro_rules! foreach {
     }}
 }
 
+use self::iter::SliceIter;
+
 impl<T> SliceFind for [T] { 
     type Item = T;
     fn find<U: ?Sized>(&self, elt: &U) -> Option<usize>
         where Self::Item: PartialEq<U>
     {
-        let mut xs = self;
-        let mut i = 0;
-        const C: usize = 8;
-        while xs.len() >= C {
-            foreach!(j in 0, 1, 2, 3, 4, 5, 6, 7 => {
-                if xs[j] == *elt { return Some(i + j); }
-            });
-            i += C;
-            xs = &xs[C..];
-        }
-        xs.iter().position(|x| *x == *elt).map(|j| i + j)
+        SliceIter::from(self).position(move |x| *x == *elt)
     }
 
     fn rfind<U: ?Sized>(&self, elt: &U) -> Option<usize>
         where Self::Item: PartialEq<U>
     {
-        let mut xs = self;
-        const C: usize = 8;
-        while xs.len() >= C {
-            let l = xs.len();
-            foreach!(j in 0, 1, 2, 3, 4, 5, 6, 7 => {
-                if xs[l - 1 - j] == *elt { return Some(l - 1 - j); }
-            });
-            xs = &xs[..l - C];
-        }
-        xs.iter().rposition(|x| *x == *elt)
+        SliceIter::from(self).rposition(move |x| *x == *elt)
     }
 }
 

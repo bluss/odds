@@ -6,6 +6,7 @@ use std::marker::PhantomData;
 use std::slice::from_raw_parts;
 
 use slice::iter::{SliceIter};
+use pointer::ptrdistance;
 
 pub unsafe trait Block {
     type Item;
@@ -35,13 +36,12 @@ impl_pod!{@array 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}
 /// A block is a fixed size array of `T`, and each iteration yields a
 /// reference to the next block.
 ///
-/// See also the tail methods, that provide access to the rest of the elements,
-/// if they count not be dividied evenly into blocks.
+/// See also the tail methods that provide access to the rest of the elements
+/// that did not go up evenly into a block.
 #[derive(Debug)]
 pub struct BlockedIter<'a, B: 'a, T: 'a> {
     ptr: *const T,
     end: *const T,
-    tail_end: *const T,
     ty1: PhantomData<&'a T>,
     ty2: PhantomData<&'a B>,
 }
@@ -65,27 +65,23 @@ impl<'a, B, T> BlockedIter<'a, B, T>
         BlockedIter {
             ptr: ptr,
             end: end,
-            tail_end: end,
             ty: PhantomData,
         }
     }
     */
 
-    /// Create an `BlockedIter` out of the slice of data, which
-    /// iterates first in blocks of `T` (unaligned loads), and
-    /// then leaves a tail of the remaining bytes.
+    /// Create an `BlockedIter` out of the slice of data, which iterates first
+    /// in blocks of `T`, and then leaves a tail of the remaining
+    /// elements.
     pub fn from_slice(data: &'a [T]) -> Self {
         assert!(size_of::<T>() != 0);
         unsafe {
             let ptr = data.as_ptr();
             let len = data.len();
-            let sz = B::capacity() as isize;
-            let end_block = ptr.offset(len as isize / sz * sz);
             let end = ptr.offset(len as isize);
             BlockedIter {
                 ptr: ptr,
-                end: end_block,
-                tail_end: end,
+                end: end,
                 ty1: PhantomData,
                 ty2: PhantomData,
             }
@@ -97,7 +93,7 @@ impl<'a, B, T> BlockedIter<'a, B, T>
     /// has returned None.
     pub fn tail_slice(&self) -> &'a [T] {
         unsafe {
-            from_raw_parts(self.ptr, ptrdistance(self.ptr, self.tail_end))
+            from_raw_parts(self.ptr, ptrdistance(self.ptr, self.end))
         }
     }
 
@@ -107,19 +103,19 @@ impl<'a, B, T> BlockedIter<'a, B, T>
     #[inline(always)]
     pub fn tail(&self) -> SliceIter<'a, T> {
         unsafe {
-            SliceIter::new(self.ptr, self.tail_end)
+            SliceIter::new(self.ptr, self.end)
         }
     }
 
     /// Return `true` if the tail is not empty.
     pub fn has_tail(&self) -> bool {
-        self.ptr != self.tail_end
+        self.ptr != self.end
     }
 
     /// Return the next iterator element, without stepping the iterator.
     pub fn peek_next(&self) -> Option<<Self as Iterator>::Item>
     {
-        if self.ptr != self.end {
+        if ptrdistance(self.ptr, self.end) >= B::capacity() {
             unsafe {
                 Some(&*(self.ptr as *const B))
             }
@@ -129,18 +125,12 @@ impl<'a, B, T> BlockedIter<'a, B, T>
     }
 }
 
-/// return the number of steps from a to b
-#[inline(always)]
-fn ptrdistance<T>(a: *const T, b: *const T) -> usize {
-    (b as usize - a as usize) / size_of::<T>()
-}
-
 impl<'a, B, T> Iterator for BlockedIter<'a, B, T>
     where B: Block<Item=T>,
 {
     type Item = &'a B;
     fn next(&mut self) -> Option<Self::Item> {
-        if self.ptr != self.end {
+        if ptrdistance(self.ptr, self.end) >= B::capacity() {
             unsafe {
                 let elt = Some(&*(self.ptr as *const B));
                 self.ptr = self.ptr.offset(B::capacity() as isize);
