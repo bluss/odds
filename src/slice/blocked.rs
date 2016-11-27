@@ -3,7 +3,6 @@
 
 use std::mem::size_of;
 use std::marker::PhantomData;
-use std::slice::from_raw_parts;
 
 use slice::iter::{SliceIter};
 use pointer::ptrdistance;
