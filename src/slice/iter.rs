@@ -412,30 +412,37 @@ impl<I> Iterator for MockTake<I> where I: Iterator {
     }
 }
 
+enum TakeStop<L, R> {
+    Their(L),
+    Our(R),
+}
+
 impl<I> FoldWhileExt for MockTake<I>
     where I: Iterator + FoldWhileExt,
 {
-    fn fold_ok<Acc, G>(&mut self, init: Acc, mut g: G) -> Result<Acc, Acc>
-        where G: FnMut(Acc, Self::Item) -> Result<Acc, Acc>
+    fn fold_ok<Acc, E, G>(&mut self, init: Acc, mut g: G) -> Result<Acc, E>
+        where G: FnMut(Acc, Self::Item) -> Result<Acc, E>
     {
         if self.n == 0 {
             Ok(init)
         } else {
-            let mut my_break = false;
             let n = &mut self.n;
-            let result = self.iter.fold_ok(init, |acc, elt| {
+            let result = self.iter.fold_ok(init, move |acc, elt| {
                 *n -= 1;
-                let res = try!(g(acc, elt));
+                let res = try!(match g(acc, elt) {
+                    Err(e) => Err(TakeStop::Their(e)),
+                    Ok(x) => Ok(x),
+                });
                 if *n == 0 {
-                    my_break = true;
-                    Err(res)
+                    Err(TakeStop::Our(res))
                 } else {
                     Ok(res)
                 }
             });
             match result {
-                Err(e) => if my_break { Ok(e) } else { Err(e) },
-                x => x,
+                Err(TakeStop::Their(e)) => Err(e),
+                Err(TakeStop::Our(x)) => Ok(x),
+                Ok(x) => Ok(x)
             }
         }
     }
@@ -445,7 +452,7 @@ impl<I> FoldWhileExt for MockTake<I>
 fn test_mock_take() {
     let data = [1, 2, 3];
     let mut iter = MockTake { n: 2, iter: SliceIter::from(&data[..]) };
-    assert_eq!(iter.fold_ok(0, |acc, &elt| Ok(acc + elt)), Ok(3));
+    assert_eq!(iter.fold_ok(0, |acc, &elt| Ok::<_, ()>(acc + elt)), Ok(3));
     assert_eq!(iter.next(), None);
     let mut iter = MockTake { n: 2, iter: SliceIter::from(&data[..]) };
     assert_eq!(iter.fold_ok(0, |_, &elt| Err(elt)), Err(1));
@@ -478,9 +485,9 @@ pub trait FoldWhileExt : Iterator {
     /// with each iterator element using the closure `g` until it returns
     /// `Err` or the iterator’s end is reached.
     /// The last `Result` value is returned.
-    fn fold_ok<Acc, G>(&mut self, init: Acc, mut g: G) -> Result<Acc, Acc>
+    fn fold_ok<Acc, E, G>(&mut self, init: Acc, mut g: G) -> Result<Acc, E>
         where Self: Sized,
-              G: FnMut(Acc, Self::Item) -> Result<Acc, Acc>
+              G: FnMut(Acc, Self::Item) -> Result<Acc, E>
     {
         let mut accum = init;
         while let Some(elt) = self.next() {
@@ -515,8 +522,8 @@ macro_rules! fold_while {
 }
 
 impl<'a, T> FoldWhileExt for SliceIter<'a, T> {
-    fn fold_ok<Acc, G>(&mut self, init: Acc, mut g: G) -> Result<Acc, Acc>
-        where G: FnMut(Acc, Self::Item) -> Result<Acc, Acc>
+    fn fold_ok<Acc, E, G>(&mut self, init: Acc, mut g: G) -> Result<Acc, E>
+        where G: FnMut(Acc, Self::Item) -> Result<Acc, E>
     {
 
         let mut accum = init;
