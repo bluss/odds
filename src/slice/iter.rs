@@ -395,6 +395,7 @@ impl<T> PointerExt for *mut T {
     }
 }
 
+/// This is a test version of the `.take(n)` adaptor.
 struct MockTake<I> {
     n: usize,
     iter: I,
@@ -412,6 +413,7 @@ impl<I> Iterator for MockTake<I> where I: Iterator {
     }
 }
 
+// Stopping reason in fold_ok
 enum TakeStop<L, R> {
     Their(L),
     Our(R),
@@ -429,14 +431,15 @@ impl<I> FoldWhileExt for MockTake<I>
             let n = &mut self.n;
             let result = self.iter.fold_ok(init, move |acc, elt| {
                 *n -= 1;
-                let res = try!(match g(acc, elt) {
+                match g(acc, elt) {
                     Err(e) => Err(TakeStop::Their(e)),
-                    Ok(x) => Ok(x),
-                });
-                if *n == 0 {
-                    Err(TakeStop::Our(res))
-                } else {
-                    Ok(res)
+                    Ok(x) => {
+                        if *n == 0 {
+                            Err(TakeStop::Our(x))
+                        } else {
+                            Ok(x)
+                        }
+                    }
                 }
             });
             match result {
@@ -456,6 +459,8 @@ fn test_mock_take() {
     assert_eq!(iter.next(), None);
     let mut iter = MockTake { n: 2, iter: SliceIter::from(&data[..]) };
     assert_eq!(iter.fold_ok(0, |_, &elt| Err(elt)), Err(1));
+    let mut iter = MockTake { n: 4, iter: SliceIter::from(&data[..]) };
+    assert_eq!(iter.fold_ok(0, |acc, &elt| Ok::<_, ()>(acc + elt)), Ok(6));
 }
 
 
