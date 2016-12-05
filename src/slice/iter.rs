@@ -236,13 +236,13 @@ impl<'a, T> Iterator for SliceIter<'a, T> {
     fn all<F>(&mut self, mut predicate: F) -> bool
         where F: FnMut(Self::Item) -> bool,
     {
-        self.fold_while(true, move |_, elt| {
+        self.fold_ok(true, move |_, elt| {
             if predicate(elt) {
-                FoldWhile::Continue(true)
+                Ok(true)
             } else {
-                FoldWhile::Done(false)
+                Err(false)
             }
-        })
+        }).unwrap_or_else(|e| e)
     }
 
     fn any<F>(&mut self, mut predicate: F) -> bool
@@ -254,27 +254,27 @@ impl<'a, T> Iterator for SliceIter<'a, T> {
     fn find<F>(&mut self, mut predicate: F) -> Option<Self::Item>
         where F: FnMut(&Self::Item) -> bool,
     {
-        self.fold_while(None, move |_, elt| {
+        self.fold_ok(None, move |_, elt| {
             if predicate(&elt) {
-                FoldWhile::Done(Some(elt))
+                Err(Some(elt))
             } else {
-                FoldWhile::Continue(None)
+                Ok(None)
             }
-        })
+        }).unwrap_or_else(|e| e)
     }
 
     fn position<F>(&mut self, mut predicate: F) -> Option<usize>
         where F: FnMut(Self::Item) -> bool,
     {
         let mut index = 0;
-        self.fold_while(None, move |_, elt| {
+        self.fold_ok(0, move |_, elt| {
             if predicate(elt) {
-                FoldWhile::Done(Some(index))
+                Err(index)
             } else {
                 index += 1;
-                FoldWhile::Continue(None)
+                Ok(0)
             }
-        })
+        }).err()
     }
 
     fn rposition<F>(&mut self, mut predicate: F) -> Option<usize>
@@ -415,15 +415,38 @@ impl<T> FoldWhile<T> {
     }
 }
 
-trait FoldWhileExt : Iterator {
+pub trait FoldWhileExt : Iterator {
     // Note: For composability (if used with adaptors, return type
     // should be FoldWhile<Acc> then instead.)
-    fn fold_while<Acc, G>(&mut self, init: Acc, g: G) -> Acc
+    /// Starting with initial accumulator `init`, combine the accumulator
+    /// with each iterator element using the closure `g` until it returns
+    /// `Err` or the iterator’s end is reached.
+    /// The last `Result` value is returned.
+    fn fold_ok<Acc, G>(&mut self, init: Acc, mut g: G) -> Result<Acc, Acc>
         where Self: Sized,
-              G: FnMut(Acc, Self::Item) -> FoldWhile<Acc>;
-    fn rfold_ok<Acc, G>(&mut self, accum: Acc, g: G) -> Result<Acc, Acc>
-        where Self: Sized,
-              G: FnMut(Acc, Self::Item) -> Result<Acc, Acc>;
+              G: FnMut(Acc, Self::Item) -> Result<Acc, Acc>
+    {
+        let mut accum = init;
+        while let Some(elt) = self.next() {
+            accum = g(accum, elt)?;
+        }
+        Ok(accum)
+    }
+
+    /// Starting with initial accumulator `init`, combine the accumulator
+    /// with each iterator element from the back using the closure `g` until it
+    /// returns `Err` or the iterator’s end is reached.
+    /// The last `Result` value is returned.
+    fn rfold_ok<Acc, G>(&mut self, init: Acc, mut g: G) -> Result<Acc, Acc>
+        where Self: Sized + DoubleEndedIterator,
+              G: FnMut(Acc, Self::Item) -> Result<Acc, Acc>
+    {
+        let mut accum = init;
+        while let Some(elt) = self.next_back() {
+            accum = g(accum, elt)?;
+        }
+        Ok(accum)
+    }
 }
 
 macro_rules! fold_while {
@@ -436,29 +459,27 @@ macro_rules! fold_while {
 }
 
 impl<'a, T> FoldWhileExt for SliceIter<'a, T> {
-    fn fold_while<Acc, G>(&mut self, init: Acc, mut g: G) -> Acc
-        where Self: Sized,
-              G: FnMut(Acc, Self::Item) -> FoldWhile<Acc>
+    fn fold_ok<Acc, G>(&mut self, init: Acc, mut g: G) -> Result<Acc, Acc>
+        where G: FnMut(Acc, Self::Item) -> Result<Acc, Acc>
     {
 
         let mut accum = init;
         unsafe {
             while ptrdistance(self.ptr, self.end) >= 4 {
-                accum = fold_while!(g(accum, &*self.ptr.post_inc()));
-                accum = fold_while!(g(accum, &*self.ptr.post_inc()));
-                accum = fold_while!(g(accum, &*self.ptr.post_inc()));
-                accum = fold_while!(g(accum, &*self.ptr.post_inc()));
+                accum = try!(g(accum, &*self.ptr.post_inc()));
+                accum = try!(g(accum, &*self.ptr.post_inc()));
+                accum = try!(g(accum, &*self.ptr.post_inc()));
+                accum = try!(g(accum, &*self.ptr.post_inc()));
             }
             while self.ptr != self.end {
-                accum = fold_while!(g(accum, &*self.ptr.post_inc()));
+                accum = try!(g(accum, &*self.ptr.post_inc()));
             }
         }
-        accum
+        Ok(accum)
     }
 
     fn rfold_ok<Acc, G>(&mut self, mut accum: Acc, mut g: G) -> Result<Acc, Acc>
-        where Self: Sized,
-              G: FnMut(Acc, Self::Item) -> Result<Acc, Acc>
+        where G: FnMut(Acc, Self::Item) -> Result<Acc, Acc>
     {
         // manual unrolling is needed when there are conditional exits from the loop's body.
         unsafe {
