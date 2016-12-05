@@ -20,6 +20,7 @@
 #![cfg_attr(feature="unstable", feature(unboxed_closures, fn_traits))]
 
 #![cfg_attr(not(feature="std"), no_std)]
+#![feature(question_mark_carrier)]
 
 #[cfg(not(feature="std"))]
 extern crate core as std;

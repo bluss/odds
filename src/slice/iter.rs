@@ -4,6 +4,7 @@ use std::mem::size_of;
 use std::marker::PhantomData;
 use std::ops::Index;
 use std::slice;
+use std::ops::Carrier;
 
 use pointer::ptrdistance;
 
@@ -422,16 +423,17 @@ enum TakeStop<L, R> {
 impl<I> FoldWhileExt for MockTake<I>
     where I: Iterator + FoldWhileExt,
 {
-    fn fold_ok<Acc, E, G>(&mut self, init: Acc, mut g: G) -> Result<Acc, E>
-        where G: FnMut(Acc, Self::Item) -> Result<Acc, E>
+    fn fold_ok<C, G>(&mut self, init: C::Success, mut g: G) -> C
+        where G: FnMut(C::Success, Self::Item) -> C,
+              C: Carrier,
     {
         if self.n == 0 {
-            return Ok(init);
+            return C::from_success(init);
         }
         let n = &mut self.n;
         let result = self.iter.fold_ok(init, move |acc, elt| {
             *n -= 1;
-            match g(acc, elt) {
+            match g(acc, elt).translate() {
                 Err(e) => Err(TakeStop::Their(e)),
                 Ok(x) => {
                     if *n == 0 {
@@ -443,9 +445,9 @@ impl<I> FoldWhileExt for MockTake<I>
             }
         });
         match result {
-            Err(TakeStop::Their(e)) => Err(e),
-            Err(TakeStop::Our(x)) => Ok(x),
-            Ok(x) => Ok(x)
+            Err(TakeStop::Their(e)) => C::from_error(e),
+            Err(TakeStop::Our(x)) => C::from_success(x),
+            Ok(x) => C::from_success(x)
         }
     }
 }
@@ -494,32 +496,34 @@ fn test_fold_ok() {
 trait FoldWhileExt : Iterator {
     /// Starting with initial accumulator `init`, combine the accumulator
     /// with each iterator element using the closure `g` until it returns
-    /// `Err` or the iterator’s end is reached.
-    /// The last `Result` value is returned.
-    fn fold_ok<Acc, E, G>(&mut self, init: Acc, mut g: G) -> Result<Acc, E>
+    /// an error or the iterator’s end is reached.
+    /// The last carrier value is returned.
+    fn fold_ok<C, G>(&mut self, init: C::Success, mut g: G) -> C
         where Self: Sized,
-              G: FnMut(Acc, Self::Item) -> Result<Acc, E>
+              G: FnMut(C::Success, Self::Item) -> C,
+              C: Carrier,
     {
         let mut accum = init;
         while let Some(elt) = self.next() {
             accum = g(accum, elt)?;
         }
-        Ok(accum)
+        C::from_success(accum)
     }
 
     /// Starting with initial accumulator `init`, combine the accumulator
     /// with each iterator element from the back using the closure `g` until it
     /// returns `Err` or the iterator’s end is reached.
     /// The last `Result` value is returned.
-    fn rfold_ok<Acc, E, G>(&mut self, init: Acc, mut g: G) -> Result<Acc, E>
+    fn rfold_ok<C, G>(&mut self, init: C::Success, mut g: G) -> C
         where Self: Sized + DoubleEndedIterator,
-              G: FnMut(Acc, Self::Item) -> Result<Acc, E>
+              G: FnMut(C::Success, Self::Item) -> C,
+              C: Carrier,
     {
         let mut accum = init;
         while let Some(elt) = self.next_back() {
             accum = g(accum, elt)?;
         }
-        Ok(accum)
+        C::from_success(accum)
     }
 }
 
@@ -533,40 +537,42 @@ macro_rules! fold_while {
 }
 
 impl<'a, T> FoldWhileExt for SliceIter<'a, T> {
-    fn fold_ok<Acc, E, G>(&mut self, init: Acc, mut g: G) -> Result<Acc, E>
-        where G: FnMut(Acc, Self::Item) -> Result<Acc, E>
+    fn fold_ok<C, G>(&mut self, init: C::Success, mut g: G) -> C
+        where G: FnMut(C::Success, Self::Item) -> C,
+              C: Carrier,
     {
 
         let mut accum = init;
         unsafe {
             while ptrdistance(self.ptr, self.end) >= 4 {
-                accum = try!(g(accum, &*self.ptr.post_inc()));
-                accum = try!(g(accum, &*self.ptr.post_inc()));
-                accum = try!(g(accum, &*self.ptr.post_inc()));
-                accum = try!(g(accum, &*self.ptr.post_inc()));
+                accum = g(accum, &*self.ptr.post_inc())?;
+                accum = g(accum, &*self.ptr.post_inc())?;
+                accum = g(accum, &*self.ptr.post_inc())?;
+                accum = g(accum, &*self.ptr.post_inc())?;
             }
             while self.ptr != self.end {
-                accum = try!(g(accum, &*self.ptr.post_inc()));
+                accum = g(accum, &*self.ptr.post_inc())?;
             }
         }
-        Ok(accum)
+        C::from_success(accum)
     }
 
-    fn rfold_ok<Acc, E, G>(&mut self, mut accum: Acc, mut g: G) -> Result<Acc, E>
-        where G: FnMut(Acc, Self::Item) -> Result<Acc, E>
+    fn rfold_ok<C, G>(&mut self, mut accum: C::Success, mut g: G) -> C
+        where G: FnMut(C::Success, Self::Item) -> C,
+              C: Carrier,
     {
         // manual unrolling is needed when there are conditional exits from the loop's body.
         unsafe {
             while ptrdistance(self.ptr, self.end) >= 4 {
-                accum = try!(g(accum, &*self.end.pre_dec()));
-                accum = try!(g(accum, &*self.end.pre_dec()));
-                accum = try!(g(accum, &*self.end.pre_dec()));
-                accum = try!(g(accum, &*self.end.pre_dec()));
+                accum = g(accum, &*self.end.pre_dec())?;
+                accum = g(accum, &*self.end.pre_dec())?;
+                accum = g(accum, &*self.end.pre_dec())?;
+                accum = g(accum, &*self.end.pre_dec())?;
             }
             while self.ptr != self.end {
-                accum = try!(g(accum, &*self.end.pre_dec()));
+                accum = g(accum, &*self.end.pre_dec())?;
             }
         }
-        Ok(accum)
+        C::from_success(accum)
     }
 }
