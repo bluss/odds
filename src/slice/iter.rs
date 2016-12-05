@@ -463,6 +463,29 @@ fn test_mock_take() {
     assert_eq!(iter.fold_ok(0, |acc, &elt| Ok::<_, ()>(acc + elt)), Ok(6));
 }
 
+#[test]
+fn test_fold_ok() {
+    let data = ["1", "2", "three"];
+    let mut iter = SliceIter::from(&data[..]);
+    let result = iter.fold_ok(0, |acc, elt| {
+        match elt.parse::<i32>() {
+            Err(e) => Err(e),
+            Ok(x) => Ok(acc + x),
+        }
+    });
+    assert!(result.is_err());
+
+    let data = ["1", "2", "3"];
+    let mut iter = SliceIter::from(&data[..]);
+    let result = iter.fold_ok(0, |acc, elt| {
+        match elt.parse::<i32>() {
+            Err(e) => Err(e),
+            Ok(x) => Ok(acc + x),
+        }
+    });
+    assert_eq!(result, Ok(6));
+}
+
 
 #[derive(Copy, Clone, Debug)]
 /// An enum used for controlling the execution of `.fold_while()`.
