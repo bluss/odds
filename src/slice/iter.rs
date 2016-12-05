@@ -254,25 +254,25 @@ impl<'a, T> Iterator for SliceIter<'a, T> {
     fn find<F>(&mut self, mut predicate: F) -> Option<Self::Item>
         where F: FnMut(&Self::Item) -> bool,
     {
-        self.fold_ok(None, move |_, elt| {
+        self.fold_ok((), move |_, elt| {
             if predicate(&elt) {
-                Err(Some(elt))
+                Err(elt)
             } else {
-                Ok(None)
+                Ok(())
             }
-        }).unwrap_or_else(|e| e)
+        }).err()
     }
 
     fn position<F>(&mut self, mut predicate: F) -> Option<usize>
         where F: FnMut(Self::Item) -> bool,
     {
         let mut index = 0;
-        self.fold_ok(0, move |_, elt| {
+        self.fold_ok((), move |_, elt| {
             if predicate(elt) {
                 Err(index)
             } else {
                 index += 1;
-                Ok(0)
+                Ok(())
             }
         }).err()
     }
@@ -281,14 +281,14 @@ impl<'a, T> Iterator for SliceIter<'a, T> {
         where F: FnMut(Self::Item) -> bool,
     {
         let mut index = self.len();
-        self.rfold_ok(None, move |_, elt| {
+        self.rfold_ok((), move |_, elt| {
             index -= 1;
             if predicate(elt) {
-                Err(Some(index))
+                Err(index)
             } else {
-                Ok(None)
+                Ok(())
             }
-        }).unwrap_or_else(|e| e)
+        }).err()
     }
 }
 
@@ -500,9 +500,9 @@ pub trait FoldWhileExt : Iterator {
     /// with each iterator element from the back using the closure `g` until it
     /// returns `Err` or the iterator’s end is reached.
     /// The last `Result` value is returned.
-    fn rfold_ok<Acc, G>(&mut self, init: Acc, mut g: G) -> Result<Acc, Acc>
+    fn rfold_ok<Acc, E, G>(&mut self, init: Acc, mut g: G) -> Result<Acc, E>
         where Self: Sized + DoubleEndedIterator,
-              G: FnMut(Acc, Self::Item) -> Result<Acc, Acc>
+              G: FnMut(Acc, Self::Item) -> Result<Acc, E>
     {
         let mut accum = init;
         while let Some(elt) = self.next_back() {
@@ -541,8 +541,8 @@ impl<'a, T> FoldWhileExt for SliceIter<'a, T> {
         Ok(accum)
     }
 
-    fn rfold_ok<Acc, G>(&mut self, mut accum: Acc, mut g: G) -> Result<Acc, Acc>
-        where G: FnMut(Acc, Self::Item) -> Result<Acc, Acc>
+    fn rfold_ok<Acc, E, G>(&mut self, mut accum: Acc, mut g: G) -> Result<Acc, E>
+        where G: FnMut(Acc, Self::Item) -> Result<Acc, E>
     {
         // manual unrolling is needed when there are conditional exits from the loop's body.
         unsafe {
