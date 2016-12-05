@@ -281,14 +281,14 @@ impl<'a, T> Iterator for SliceIter<'a, T> {
         where F: FnMut(Self::Item) -> bool,
     {
         let mut index = self.len();
-        self.rfold_while(None, move |_, elt| {
+        self.rfold_ok(None, move |_, elt| {
             index -= 1;
             if predicate(elt) {
-                FoldWhile::Done(Some(index))
+                Err(Some(index))
             } else {
-                FoldWhile::Continue(None)
+                Ok(None)
             }
-        })
+        }).unwrap_or_else(|e| e)
     }
 }
 
@@ -421,9 +421,9 @@ trait FoldWhileExt : Iterator {
     fn fold_while<Acc, G>(&mut self, init: Acc, g: G) -> Acc
         where Self: Sized,
               G: FnMut(Acc, Self::Item) -> FoldWhile<Acc>;
-    fn rfold_while<Acc, G>(&mut self, accum: Acc, g: G) -> Acc
+    fn rfold_ok<Acc, G>(&mut self, accum: Acc, g: G) -> Result<Acc, Acc>
         where Self: Sized,
-              G: FnMut(Acc, Self::Item) -> FoldWhile<Acc>;
+              G: FnMut(Acc, Self::Item) -> Result<Acc, Acc>;
 }
 
 macro_rules! fold_while {
@@ -456,22 +456,22 @@ impl<'a, T> FoldWhileExt for SliceIter<'a, T> {
         accum
     }
 
-    fn rfold_while<Acc, G>(&mut self, mut accum: Acc, mut g: G) -> Acc
+    fn rfold_ok<Acc, G>(&mut self, mut accum: Acc, mut g: G) -> Result<Acc, Acc>
         where Self: Sized,
-              G: FnMut(Acc, Self::Item) -> FoldWhile<Acc>
+              G: FnMut(Acc, Self::Item) -> Result<Acc, Acc>
     {
         // manual unrolling is needed when there are conditional exits from the loop's body.
         unsafe {
             while ptrdistance(self.ptr, self.end) >= 4 {
-                accum = fold_while!(g(accum, &*self.end.pre_dec()));
-                accum = fold_while!(g(accum, &*self.end.pre_dec()));
-                accum = fold_while!(g(accum, &*self.end.pre_dec()));
-                accum = fold_while!(g(accum, &*self.end.pre_dec()));
+                accum = try!(g(accum, &*self.end.pre_dec()));
+                accum = try!(g(accum, &*self.end.pre_dec()));
+                accum = try!(g(accum, &*self.end.pre_dec()));
+                accum = try!(g(accum, &*self.end.pre_dec()));
             }
             while self.ptr != self.end {
-                accum = fold_while!(g(accum, &*self.end.pre_dec()));
+                accum = try!(g(accum, &*self.end.pre_dec()));
             }
         }
-        accum
+        Ok(accum)
     }
 }
