@@ -395,6 +395,62 @@ impl<T> PointerExt for *mut T {
     }
 }
 
+struct MockTake<I> {
+    n: usize,
+    iter: I,
+}
+
+impl<I> Iterator for MockTake<I> where I: Iterator {
+    type Item = I::Item;
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.n > 0 {
+            self.n -= 1;
+            self.iter.next()
+        } else {
+            None
+        }
+    }
+}
+
+impl<I> FoldWhileExt for MockTake<I>
+    where I: Iterator + FoldWhileExt,
+{
+    fn fold_ok<Acc, G>(&mut self, init: Acc, mut g: G) -> Result<Acc, Acc>
+        where G: FnMut(Acc, Self::Item) -> Result<Acc, Acc>
+    {
+        if self.n == 0 {
+            Ok(init)
+        } else {
+            let mut my_break = false;
+            let n = &mut self.n;
+            let result = self.iter.fold_ok(init, |acc, elt| {
+                *n -= 1;
+                let res = try!(g(acc, elt));
+                if *n == 0 {
+                    my_break = true;
+                    Err(res)
+                } else {
+                    Ok(res)
+                }
+            });
+            match result {
+                Err(e) => if my_break { Ok(e) } else { Err(e) },
+                x => x,
+            }
+        }
+    }
+}
+
+#[test]
+fn test_mock_take() {
+    let data = [1, 2, 3];
+    let mut iter = MockTake { n: 2, iter: SliceIter::from(&data[..]) };
+    assert_eq!(iter.fold_ok(0, |acc, &elt| Ok(acc + elt)), Ok(3));
+    assert_eq!(iter.next(), None);
+    let mut iter = MockTake { n: 2, iter: SliceIter::from(&data[..]) };
+    assert_eq!(iter.fold_ok(0, |_, &elt| Err(elt)), Err(1));
+}
+
 
 #[derive(Copy, Clone, Debug)]
 /// An enum used for controlling the execution of `.fold_while()`.
