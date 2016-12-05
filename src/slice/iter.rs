@@ -344,7 +344,7 @@ impl<'a, T> Index<usize> for SliceIter<'a, T> {
 
 
 /// Extension methods for raw pointers
-pub trait PointerExt : Copy {
+trait PointerExt : Copy {
     unsafe fn offset(self, i: isize) -> Self;
 
     /// Increment by 1
@@ -491,28 +491,7 @@ fn test_fold_ok() {
 }
 
 
-#[derive(Copy, Clone, Debug)]
-/// An enum used for controlling the execution of `.fold_while()`.
-pub enum FoldWhile<T> {
-    /// Continue folding with this value
-    Continue(T),
-    /// Fold is complete and will return this value
-    Done(T),
-}
-
-impl<T> FoldWhile<T> {
-    /// Return the inner value.
-    pub fn into_inner(self) -> T {
-        match self {
-            FoldWhile::Continue(t) => t,
-            FoldWhile::Done(t) => t,
-        }
-    }
-}
-
-pub trait FoldWhileExt : Iterator {
-    // Note: For composability (if used with adaptors, return type
-    // should be FoldWhile<Acc> then instead.)
+trait FoldWhileExt : Iterator {
     /// Starting with initial accumulator `init`, combine the accumulator
     /// with each iterator element using the closure `g` until it returns
     /// `Err` or the iterator’s end is reached.
