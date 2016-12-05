@@ -236,13 +236,13 @@ impl<'a, T> Iterator for SliceIter<'a, T> {
     fn all<F>(&mut self, mut predicate: F) -> bool
         where F: FnMut(Self::Item) -> bool,
     {
-        self.fold_ok(true, move |_, elt| {
+        self.fold_ok((), move |_, elt| {
             if predicate(elt) {
-                Ok(true)
+                Ok(())
             } else {
-                Err(false)
+                Err(())
             }
-        }).unwrap_or_else(|e| e)
+        }).is_ok()
     }
 
     fn any<F>(&mut self, mut predicate: F) -> bool
