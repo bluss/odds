@@ -253,6 +253,12 @@ impl<'a, T> SliceIter<'a, T> {
             slice::from_raw_parts(self.ptr, self.len())
         }
     }
+
+    /// Return the next iterator element, without checking if the end is reached
+    #[inline]
+    pub unsafe fn next_unchecked(&mut self) -> <Self as Iterator>::Item {
+        &*self.ptr.post_inc()
+    }
 }
 
 impl<'a, T> Iterator for SliceIter<'a, T> {
