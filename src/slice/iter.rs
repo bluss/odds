@@ -33,6 +33,9 @@ impl<'a, T> Clone for SliceCopyIter<'a, T> {
 impl<'a, T> SliceCopyIter<'a, T>
     where T: Copy
 {
+    /// Create a new slice copy iterator
+    ///
+    /// Panics if `T` is a zero-sized type. That case is not supported.
     #[inline]
     pub unsafe fn new(ptr: *const T, end: *const T) -> Self {
         assert!(size_of::<T>() != 0);
@@ -56,6 +59,33 @@ impl<'a, T> SliceCopyIter<'a, T>
     /// Return the end pointer
     pub fn end(&self) -> *const T {
         self.end
+    }
+
+    /// Return mutable reference to the start pointer
+    ///
+    /// Unsafe because it is easy to violate memory safety by setting
+    /// the pointer outside the data's valid range.
+    pub unsafe fn start_mut(&mut self) -> &mut *const T {
+        &mut self.ptr
+    }
+
+    /// Return mutable reference to the start pointer
+    ///
+    /// Unsafe because it is easy to violate memory safety by setting
+    /// the pointer outside the data's valid range.
+    pub unsafe fn end_mut(&mut self) -> &mut *const T {
+        &mut self.end
+    }
+
+    /// Return the next iterator element, without stepping the iterator.
+    pub fn peek_next(&self) -> Option<<Self as Iterator>::Item> {
+        if self.ptr != self.end {
+            unsafe {
+                Some(*self.ptr)
+            }
+        } else {
+            None
+        }
     }
 }
 
@@ -148,6 +178,7 @@ impl<'a, T> Index<usize> for SliceCopyIter<'a, T>
 /// Slice (contiguous data) iterator.
 ///
 /// Iterator element type is `&T`
+///
 /// This iterator exists mainly to have the constructor from a pair
 /// of raw pointers available, which the libcore slice iterator does not allow.
 ///
@@ -168,6 +199,8 @@ impl<'a, T> SliceIter<'a, T> {
     /// Create a new slice iterator
     ///
     /// See also ``SliceIter::from, SliceIter::default``.
+    ///
+    /// Panics if `T` is a zero-sized type. That case is not supported.
     #[inline]
     pub unsafe fn new(ptr: *const T, end: *const T) -> Self {
         assert!(size_of::<T>() != 0);
@@ -188,9 +221,24 @@ impl<'a, T> SliceIter<'a, T> {
         self.end
     }
 
+    /// Return mutable reference to the start pointer
+    ///
+    /// Unsafe because it is easy to violate memory safety by setting
+    /// the pointer outside the data's valid range.
+    pub unsafe fn start_mut(&mut self) -> &mut *const T {
+        &mut self.ptr
+    }
+
+    /// Return mutable reference to the start pointer
+    ///
+    /// Unsafe because it is easy to violate memory safety by setting
+    /// the pointer outside the data's valid range.
+    pub unsafe fn end_mut(&mut self) -> &mut *const T {
+        &mut self.end
+    }
+
     /// Return the next iterator element, without stepping the iterator.
-    pub fn peek_next(&self) -> Option<<Self as Iterator>::Item>
-    {
+    pub fn peek_next(&self) -> Option<<Self as Iterator>::Item> {
         if self.ptr != self.end {
             unsafe {
                 Some(&*self.ptr)
@@ -313,7 +361,6 @@ impl<'a, T> ExactSizeIterator for SliceIter<'a, T> {
 
 impl<'a, T> From<&'a [T]> for SliceIter<'a, T> {
     fn from(slice: &'a [T]) -> Self {
-        assert!(size_of::<T>() != 0);
         unsafe {
             let ptr = slice.as_ptr();
             let end = ptr.offset(slice.len() as isize);
