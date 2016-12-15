@@ -4,8 +4,8 @@
 use std::mem::size_of;
 use std::marker::PhantomData;
 
-use slice::iter::{SliceIter};
-use pointer::ptrdistance;
+use rawslice::SliceIter;
+use rawpointer::ptrdistance;
 
 pub unsafe trait Block {
     type Item;

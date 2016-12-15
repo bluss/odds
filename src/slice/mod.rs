@@ -14,6 +14,8 @@ use std::cmp::min;
 use std::mem::{self, align_of, size_of};
 use std::slice::from_raw_parts;
 
+use rawslice::SliceIter;
+
 /// Unaligned load of a u64 at index `i` in `buf`
 unsafe fn load_u64(buf: &[u8], i: usize) -> u64 {
     debug_assert!(i + 8 <= buf.len());
@@ -118,8 +120,6 @@ macro_rules! foreach {
         )*
     }}
 }
-
-use self::iter::SliceIter;
 
 impl<T> SliceFind for [T] { 
     type Item = T;

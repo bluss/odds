@@ -23,6 +23,8 @@
 
 #[cfg(not(feature="std"))]
 extern crate core as std;
+extern crate rawslice;
+extern crate rawpointer;
 
 mod range;
 #[path = "fix.rs"]
@@ -32,7 +34,6 @@ pub mod string;
 pub mod vec;
 pub mod slice;
 pub mod stride;
-pub mod pointer;
 
 pub use fix_impl::Fix;
 pub use fix_impl::fix;

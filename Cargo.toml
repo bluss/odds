@@ -11,6 +11,8 @@ repository = "https://github.com/bluss/odds"
 keywords = ["data-structure", "debug-assert", "slice", "string", "no_std"]
 
 [dependencies]
+rawpointer = "0.1.0"
+rawslice = "0.1.0"
 
 [dev-dependencies]
 itertools = "0.5.1"

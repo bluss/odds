@@ -20,13 +20,12 @@ __ https://docs.rs/odds/
 Recent Changes
 --------------
 
-- 0.2.26
+- 
 
   - Add ``SliceIter``. Use unrolled ``.all(), .find(), position(), rposition()``
   - More features for ``SliceIter`` and ``SliceCopyIter``: access start/end
     pointer, implement ``Index``.
   - Add ``BlockedIter``
-  - Add ``pointer::ptrdistance``
 
 - 0.2.25
 
