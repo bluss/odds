@@ -397,7 +397,7 @@ impl<'a, T> Index<usize> for SliceIter<'a, T> {
 
 
 /// Extension methods for raw pointers
-pub trait PointerExt : Copy {
+trait PointerExt : Copy {
     unsafe fn offset(self, i: isize) -> Self;
 
     /// Increment by 1
@@ -451,21 +451,11 @@ impl<T> PointerExt for *mut T {
 
 #[derive(Copy, Clone, Debug)]
 /// An enum used for controlling the execution of `.fold_while()`.
-pub enum FoldWhile<T> {
+enum FoldWhile<T> {
     /// Continue folding with this value
     Continue(T),
     /// Fold is complete and will return this value
     Done(T),
-}
-
-impl<T> FoldWhile<T> {
-    /// Return the inner value.
-    pub fn into_inner(self) -> T {
-        match self {
-            FoldWhile::Continue(t) => t,
-            FoldWhile::Done(t) => t,
-        }
-    }
 }
 
 trait FoldWhileExt : Iterator {
