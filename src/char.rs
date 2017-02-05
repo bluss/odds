@@ -13,9 +13,8 @@
 //! Extra functions for `char`
 
 #[cfg(feature = "std")]
-use std::fmt::{Display, Formatter, self};
-#[cfg(feature = "std")]
 use std::error::Error;
+use std::fmt::{Display, Formatter, self};
 
 // UTF-8 ranges and tags for encoding characters
 const TAG_CONT: u8    = 0b1000_0000;
@@ -30,7 +29,6 @@ const MAX_THREE_B: u32 =  0x10000;
 #[derive(Debug, Copy, Clone)]
 pub struct EncodeUtf8Error(());
 
-#[cfg(feature = "std")]
 impl Display for EncodeUtf8Error {
     fn fmt(&self, fmtr: &mut Formatter) -> fmt::Result {
         fmtr.pad(self.description())
