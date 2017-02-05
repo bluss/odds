@@ -30,6 +30,7 @@ const MAX_THREE_B: u32 =  0x10000;
 pub struct EncodeUtf8Error(());
 
 impl Display for EncodeUtf8Error {
+    #[inline]
     fn fmt(&self, fmtr: &mut Formatter) -> fmt::Result {
         fmtr.pad(self.description())
     }
@@ -40,6 +41,7 @@ const ERROR_DESCRIPTION: &'static str = "an error occurred while encoding a utf8
 
 #[cfg(feature = "std")]
 impl Error for EncodeUtf8Error {
+    #[inline]
     fn description(&self) -> &str {
         ERROR_DESCRIPTION
     }
@@ -47,7 +49,8 @@ impl Error for EncodeUtf8Error {
 
 #[cfg(not(feature = "std"))]
 impl EncodeUtf8Error {
-    fn description(&self) -> &str {
+    #[inline]
+    pub fn description(&self) -> &str {
         ERROR_DESCRIPTION
     }
 }
