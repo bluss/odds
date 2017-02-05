@@ -25,6 +25,31 @@ const MAX_THREE_B: u32 =  0x10000;
 #[derive(Debug, Copy, Clone)]
 pub struct EncodeUtf8Error(());
 
+#[cfg(feature = "std")]
+impl ::std::fmt::Display for EncodeUtf8Error {
+    fn fmt(&self, fmtr: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        use ::std::error::Error;
+        fmtr.pad(self.description())
+    }
+}
+
+const ERROR_DESCRIPTION: &'static str = "an error occurred while encoding a utf8 char into the \
+                                         buffer";
+
+#[cfg(feature = "std")]
+impl ::std::error::Error for EncodeUtf8Error {
+    fn description(&self) -> &str {
+        ERROR_DESCRIPTION
+    }
+}
+
+#[cfg(not(feature = "std"))]
+impl EncodeUtf8Error {
+    fn description(&self) -> &str {
+        ERROR_DESCRIPTION
+    }
+}
+
 /// Encode a char into buf using UTF-8.
 ///
 /// On success, return the byte length of the encoding (1, 2, 3 or 4).<br>
