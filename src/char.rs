@@ -36,22 +36,18 @@ impl Display for EncodeUtf8Error {
     }
 }
 
-const ERROR_DESCRIPTION: &'static str = "an error occurred while encoding a utf8 char into the \
-                                         buffer";
-
 #[cfg(feature = "std")]
 impl Error for EncodeUtf8Error {
     #[inline]
     fn description(&self) -> &str {
-        ERROR_DESCRIPTION
+        EncodeUtf8Error::description(self)
     }
 }
 
-#[cfg(not(feature = "std"))]
 impl EncodeUtf8Error {
     #[inline]
     pub fn description(&self) -> &str {
-        ERROR_DESCRIPTION
+        "an error occurred while encoding a utf8 char into the buffer"
     }
 }
 
