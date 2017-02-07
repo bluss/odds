@@ -12,6 +12,10 @@
 
 //! Extra functions for `char`
 
+#[cfg(feature = "std")]
+use std::error::Error;
+use std::fmt::{Display, Formatter, self};
+
 // UTF-8 ranges and tags for encoding characters
 const TAG_CONT: u8    = 0b1000_0000;
 const TAG_TWO_B: u8   = 0b1100_0000;
@@ -24,6 +28,28 @@ const MAX_THREE_B: u32 =  0x10000;
 /// Placeholder
 #[derive(Debug, Copy, Clone)]
 pub struct EncodeUtf8Error(());
+
+impl Display for EncodeUtf8Error {
+    #[inline]
+    fn fmt(&self, fmtr: &mut Formatter) -> fmt::Result {
+        fmtr.pad(self.description())
+    }
+}
+
+#[cfg(feature = "std")]
+impl Error for EncodeUtf8Error {
+    #[inline]
+    fn description(&self) -> &str {
+        EncodeUtf8Error::description(self)
+    }
+}
+
+impl EncodeUtf8Error {
+    #[inline]
+    pub fn description(&self) -> &str {
+        "an error occurred while encoding a utf8 char into the buffer"
+    }
+}
 
 /// Encode a char into buf using UTF-8.
 ///
