@@ -1,7 +1,8 @@
+use std::marker::PhantomData;
 
 /// Fixpoint combinator for rust closures, generalized over the return type.
 ///
-/// In **Fix\<T, R\>**, **T** is the argument type, and **R** is the return type,
+/// In **Fix\<F, T, R\>**, **T** is the argument type, and **R** is the return type,
 /// **R** defaults to **T**.
 ///
 /// Calling the `Fix` value only supports function call notation with the nightly
@@ -13,8 +14,8 @@
 /// use odds::Fix;
 /// use odds::fix;
 ///
-/// let c = |f: Fix<i32>, x| if x == 0 { 1 } else { x * f.call(x - 1) };
-/// let fact = Fix(&c);
+/// let c = |f: Fix<_, i32>, x| if x == 0 { 1 } else { x * f.call(x - 1) };
+/// let fact = Fix::new(&c);
 /// assert_eq!(fact.call(5), 120);
 ///
 /// let data = [true, false];
@@ -28,13 +29,21 @@
 // using feature `unstable`
 use odds::Fix;
 
-let c = |f: Fix<i32>, x| if x == 0 { 1 } else { x * f(x - 1) };
+let c = |f: Fix<_, i32>, x| if x == 0 { 1 } else { x * f(x - 1) };
 let fact = Fix(&c);
 assert_eq!(fact(5), 120);
 ```
 "
 )]
-pub struct Fix<'a, T: 'a, R: 'a = T>(pub &'a Fn(Fix<T, R>, T) -> R);
+pub struct Fix<'a, F: 'a, T: 'a, R: 'a = T>(&'a F, PhantomData<fn(T) -> R>);
+
+impl<'a, F, T, R> Fix<'a, F, T, R>
+    where F: Fn(Fix<F, T, R>, T) -> R,
+{
+    pub fn new(f: &'a F) -> Self {
+        Fix(f, PhantomData)
+    }
+}
 
 /// Fixpoint combinator for rust closures, generalized over the return type.
 ///
@@ -70,26 +79,30 @@ assert_eq!(120, fix(5, |f, x| if x == 0 { 1 } else { x * f(x - 1) }));
 "
 )]
 pub fn fix<T, R, F>(init: T, closure: F) -> R
-    where F: Fn(Fix<T, R>, T) -> R
+    where F: Fn(Fix<F, T, R>, T) -> R
 {
-    Fix(&closure).call(init)
+    Fix(&closure, PhantomData).call(init)
 }
 
-impl<'a, T, R> Fix<'a, T, R> {
+impl<'a, F, T, R> Fix<'a, F, T, R>
+    where F: Fn(Fix<F, T, R>, T) -> R,
+{
     pub fn call(&self, arg: T) -> R {
         let f = *self;
         f.0(f, arg)
     }
 }
 
-impl<'a, T, R> Clone for Fix<'a, T, R> {
+impl<'a, F, T, R> Clone for Fix<'a, F, T, R> {
     fn clone(&self) -> Self { *self }
 }
 
-impl<'a, T, R> Copy for Fix<'a, T, R> { }
+impl<'a, F, T, R> Copy for Fix<'a, F, T, R> { }
 
 #[cfg(feature="unstable")]
-impl<'a, T, R> FnOnce<(T,)> for Fix<'a, T, R> {
+impl<'a, F, T, R> FnOnce<(T,)> for Fix<'a, F, T, R>
+    where F: Fn(Fix<F, T, R>, T) -> R,
+{
     type Output = R;
     #[inline]
     extern "rust-call" fn call_once(self, x: (T,)) -> R {
@@ -98,7 +111,9 @@ impl<'a, T, R> FnOnce<(T,)> for Fix<'a, T, R> {
 }
 
 #[cfg(feature="unstable")]
-impl<'a, T, R> FnMut<(T,)> for Fix<'a, T, R> {
+impl<'a, F, T, R> FnMut<(T,)> for Fix<'a, F, T, R>
+    where F: Fn(Fix<F, T, R>, T) -> R,
+{
     #[inline]
     extern "rust-call" fn call_mut(&mut self, x: (T,)) -> R {
         self.call(x.0)
@@ -106,10 +121,11 @@ impl<'a, T, R> FnMut<(T,)> for Fix<'a, T, R> {
 }
 
 #[cfg(feature="unstable")]
-impl<'a, T, R> Fn<(T,)> for Fix<'a, T, R> {
+impl<'a, F, T, R> Fn<(T,)> for Fix<'a, F, T, R>
+    where F: Fn(Fix<F, T, R>, T) -> R,
+{
     #[inline]
     extern "rust-call" fn call(&self, x: (T,)) -> R {
         self.call(x.0)
     }
 }
-
