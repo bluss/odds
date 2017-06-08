@@ -181,27 +181,27 @@ fn test_splice() {
     use std::iter::once;
 
     let mut v = vec![1, 2, 3, 4];
-    v.splice(1..1, vec![9, 9]);
+    VecExt::splice(&mut v, 1..1, vec![9, 9]);
     assert_eq!(v, &[1, 9, 9, 2, 3, 4]);
 
     let mut v = vec![1, 2, 3, 4];
-    v.splice(1..2, vec![9, 9]);
+    VecExt::splice(&mut v, 1..2, vec![9, 9]);
     assert_eq!(v, &[1, 9, 9, 3, 4]);
 
     let mut v = vec![1, 2, 3, 4, 5];
-    v.splice(1..4, vec![9, 9]);
+    VecExt::splice(&mut v, 1..4, vec![9, 9]);
     assert_eq!(v, &[1, 9, 9, 5]);
 
     let mut v = vec![1, 2, 3, 4];
-    v.splice(0..4, once(9));
+    VecExt::splice(&mut v, 0..4, once(9));
     assert_eq!(v, &[9]);
 
     let mut v = vec![1, 2, 3, 4];
-    v.splice(0..4, None);
+    VecExt::splice(&mut v, 0..4, None);
     assert_eq!(v, &[]);
 
     let mut v = vec![1, 2, 3, 4];
-    v.splice(1.., Some(9));
+    VecExt::splice(&mut v, 1.., Some(9));
     assert_eq!(v, &[1, 9]);
 }
 
