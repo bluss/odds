@@ -15,6 +15,7 @@ matrix:
 branches:
   only:
     - master
+    - 0.2.x
 script:
   - |
       cargo build --verbose --features "$FEATURES" &&
