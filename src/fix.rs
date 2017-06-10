@@ -30,7 +30,7 @@ use std::marker::PhantomData;
 use odds::Fix;
 
 let c = |f: Fix<_, i32>, x| if x == 0 { 1 } else { x * f(x - 1) };
-let fact = Fix(&c);
+let fact = Fix::new(&c);
 assert_eq!(fact(5), 120);
 ```
 "
