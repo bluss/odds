@@ -2,9 +2,7 @@ language: rust
 sudo: false
 matrix:
   include:
-    - rust: 1.6.0
-      env:
-      - TESTFAILOK=1
+    - rust: 1.12.0
     - rust: stable
       env:
       - NODEFAULT=1
