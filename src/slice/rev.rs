@@ -44,6 +44,18 @@ use super::SliceFind;
 // FIXME: Should be repr(transparent) when stable
 pub struct RevSlice<T>([T]);
 
+#[inline]
+fn rev_element_index_no_wrap(len: usize, i: usize) -> usize
+{
+    len - (1 + i)
+}
+
+#[inline]
+fn rev_split_index(len: usize, i: usize) -> usize
+{
+    len - i
+}
+
 impl<T> RevSlice<T> {
     /// Return the length of the slice.
     pub fn len(&self) -> usize {
@@ -52,14 +64,14 @@ impl<T> RevSlice<T> {
 
     // arithmetic overflow checked in debug builds
     #[inline]
-    fn raw_index_no_wrap(&self, i: usize) -> usize {
+    fn rev_element_index_no_wrap(&self, i: usize) -> usize {
         self.len() - (1 + i)
     }
 
     /// Return the index into the underlying slice, if it's in bounds
     fn raw_index(&self, i: usize) -> Option<usize> {
         if i < self.len() {
-            Some(self.raw_index_no_wrap(i))
+            Some(self.rev_element_index_no_wrap(i))
         } else {
             None
         }
@@ -281,13 +293,13 @@ impl<T> SliceFind for RevSlice<T> {
     fn find<U: ?Sized>(&self, elt: &U) -> Option<usize>
         where Self::Item: PartialEq<U>
     {
-        self.0.rfind(elt).map(move |i| self.raw_index_no_wrap(i))
+        self.0.rfind(elt).map(move |i| self.rev_element_index_no_wrap(i))
     }
 
     fn rfind<U: ?Sized>(&self, elt: &U) -> Option<usize>
         where Self::Item: PartialEq<U>
     {
-        self.0.find(elt).map(move |i| self.raw_index_no_wrap(i))
+        self.0.find(elt).map(move |i| self.rev_element_index_no_wrap(i))
     }
 }
 
@@ -314,7 +326,7 @@ pub trait SliceRef : IntoIterator + Sized
 {
     type Reverse: SliceRef;
     fn split_at(self, i: usize) -> (Self, Self);
-    fn rev(self) -> Self::Reverse;
+    fn reversed(self) -> Self::Reverse;
 }
 
 impl<T> Slice for [T] {
@@ -328,7 +340,7 @@ impl<'a, T> SliceRef for &'a [T] {
     fn split_at(self, i: usize) -> (Self, Self) {
         (*self).split_at(i)
     }
-    fn rev(self) -> Self::Reverse {
+    fn reversed(self) -> Self::Reverse {
         <_>::from(self)
     }
 }
@@ -338,7 +350,7 @@ impl<'a, T> SliceRef for &'a mut [T] {
     fn split_at(self, i: usize) -> (Self, Self) {
         (*self).split_at_mut(i)
     }
-    fn rev(self) -> Self::Reverse {
+    fn reversed(self) -> Self::Reverse {
         <_>::from(self)
     }
 }
@@ -354,7 +366,7 @@ impl<'a, T> SliceRef for &'a RevSlice<T> {
     fn split_at(self, i: usize) -> (Self, Self) {
         (*self).split_at(i)
     }
-    fn rev(self) -> Self::Reverse {
+    fn reversed(self) -> Self::Reverse {
         unsafe {
             &*(self as *const _ as *const _)
         }
@@ -366,9 +378,36 @@ impl<'a, T> SliceRef for &'a mut RevSlice<T> {
     fn split_at(self, i: usize) -> (Self, Self) {
         (*self).split_at_mut(i)
     }
-    fn rev(self) -> Self::Reverse {
+    fn reversed(self) -> Self::Reverse {
         unsafe {
             &mut *(self as *mut _ as *mut _)
+        }
+    }
+}
+
+impl<'a, T> SliceRef for Iter<'a, T> {
+    type Reverse = Rev<Self>;
+    fn split_at(self, i: usize) -> (Self, Self) {
+        let slc = self.as_slice();
+        let (a, b) = slc.split_at(i);
+        (a.iter(), b.iter())
+    }
+    fn reversed(self) -> Self::Reverse {
+        Iterator::rev(self)
+    }
+}
+
+impl<'a, T> SliceRef for Rev<Iter<'a, T>> {
+    type Reverse = Iter<'a, T>;
+    fn split_at(self, i: usize) -> (Self, Self) {
+        let slc = self.reversed().as_slice();
+        let (a, b) = slc.split_at(rev_split_index(slc.len(), i));
+        (b.iter().rev(), a.iter().rev())
+    }
+    fn reversed(self) -> Self::Reverse {
+        // FIXME: HACK!
+        unsafe {
+            transmute(self)
         }
     }
 }
