@@ -165,7 +165,7 @@ impl<'a, T, Slice: ?Sized> From<&'a Slice> for &'a RevSlice<T>
 {
     fn from(slc: &'a Slice) -> Self {
         unsafe {
-            transmute(slc.as_ref())
+            &*(slc.as_ref() as *const _ as *const RevSlice<T>)
         }
     }
 }
@@ -175,7 +175,7 @@ impl<'a, T, Slice: ?Sized> From<&'a mut Slice> for &'a mut RevSlice<T>
 {
     fn from(slc: &'a mut Slice) -> Self {
         unsafe {
-            transmute(slc.as_mut())
+            &mut *(slc.as_mut() as *mut _ as *mut RevSlice<T>)
         }
     }
 }
@@ -184,7 +184,7 @@ impl<'a, T, Slice: ?Sized> From<&'a mut Slice> for &'a mut RevSlice<T>
 impl<T> From<Box<[T]>> for Box<RevSlice<T>> {
     fn from(slc: Box<[T]>) -> Self {
         unsafe {
-            transmute(slc)
+            Box::from_raw(Box::into_raw(slc) as *mut _ as *mut _)
         }
     }
 }
@@ -291,7 +291,47 @@ impl<T> SliceFind for RevSlice<T> {
     }
 }
 
+/// Extension trait -- gives the .rev() methods to slices and revslices
+pub trait RevExt {
+    type Output;
+    /// Return a reversed version of the slice
+    ///
+    /// .rev() of a slice is a RevSlice, and .rev() of a RevSlice is a regular
+    /// slice.
+    fn rev(self) -> Self::Output;
+}
 
+impl<'a, T> RevExt for &'a [T] {
+    type Output = &'a RevSlice<T>;
+    fn rev(self) -> Self::Output {
+        <_>::from(self)
+    }
+}
+
+impl<'a, T> RevExt for &'a mut [T] {
+    type Output = &'a mut RevSlice<T>;
+    fn rev(self) -> Self::Output {
+        <_>::from(self)
+    }
+}
+
+impl<'a, T> RevExt for &'a RevSlice<T> {
+    type Output = &'a [T];
+    fn rev(self) -> Self::Output {
+        unsafe {
+            &*(self as *const _ as *const _)
+        }
+    }
+}
+
+impl<'a, T> RevExt for &'a mut RevSlice<T> {
+    type Output = &'a mut [T];
+    fn rev(self) -> Self::Output {
+        unsafe {
+            &mut *(self as *mut _ as *mut _)
+        }
+    }
+}
 
 #[test]
 fn test_rev_slice_1() {
