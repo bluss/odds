@@ -4,6 +4,7 @@ extern crate itertools;
 
 use odds::string::StrExt;
 
+#[allow(deprecated)]
 #[test]
 fn rep() {
     assert_eq!("".rep(0), "");

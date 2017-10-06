@@ -52,9 +52,11 @@ pub trait StrExt {
 }
 
 /// Extension trait for `str` for string slicing without panicking
+#[deprecated(note="Use str::get with a range instead")]
 pub trait StrSlice {
     /// Return a slice of the string, if it is in bounds /and on character boundaries/,
     /// otherwise return `None`
+    #[deprecated(note="Use str::get with a range instead")]
     fn get_slice<R>(&self, r: R) -> Option<&str> where R: IndexRange;
 }
 
@@ -95,6 +97,7 @@ impl StrExt for str {
     }
 }
 
+#[allow(deprecated)]
 impl StrSlice for str {
     fn get_slice<R>(&self, r: R) -> Option<&str> where R: IndexRange {
         let start = r.start().unwrap_or(0);
@@ -334,6 +337,7 @@ fn str_windows_not_0() {
     CharWindows::new("abc", 0);
 }
 
+#[allow(deprecated)]
 #[test]
 fn test_acc_index() {
     let s = "Abcαβγ";
@@ -365,6 +369,7 @@ fn test_string_ext() {
     assert_eq!(s, "αxβγabc");
 }
 
+#[allow(deprecated)]
 #[test]
 fn test_slice() {
     let t = "αβγabc";
