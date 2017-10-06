@@ -14,6 +14,7 @@ pub trait StrExt {
     /// Repeat the string `n` times.
     ///
     /// Requires `feature="std"`
+    #[deprecated(note="Use str::repeat instead")]
     fn rep(&self, n: usize) -> String;
 
     #[cfg(feature="std")]
