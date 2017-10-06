@@ -291,42 +291,82 @@ impl<T> SliceFind for RevSlice<T> {
     }
 }
 
-/// Extension trait -- gives the .rev() methods to slices and revslices
-pub trait RevExt {
-    type Output;
-    /// Return a reversed version of the slice
-    ///
-    /// .rev() of a slice is a RevSlice, and .rev() of a RevSlice is a regular
-    /// slice.
-    fn rev(self) -> Self::Output;
+use std::ops::{Range, RangeTo, RangeFrom};
+
+type Output<T> = <T as Index<usize>>::Output;
+
+/// Common interface for `[T]` and `RevSlice<T>`
+pub trait Slice :
+    IndexMut<usize> +
+    IndexMut<Range<usize>, Output=Self> +
+    IndexMut<RangeTo<usize>, Output=Self> +
+    IndexMut<RangeFrom<usize>, Output=Self>
+    where for<'a> &'a Self: SliceRef,
+          for<'a> &'a mut Self: SliceRef,
+{
+    fn len(&self) -> usize;
+    fn get(&self, i: usize) -> Option<&Output<Self>>;
+    fn get_mut(&mut self, i: usize) -> Option<&mut Output<Self>>;
 }
 
-impl<'a, T> RevExt for &'a [T] {
-    type Output = &'a RevSlice<T>;
-    fn rev(self) -> Self::Output {
+// Fixme: Missing ESI, DEI for iterators
+pub trait SliceRef : IntoIterator + Sized
+{
+    type Reverse: SliceRef;
+    fn split_at(self, i: usize) -> (Self, Self);
+    fn rev(self) -> Self::Reverse;
+}
+
+impl<T> Slice for [T] {
+    fn len(&self) -> usize { self.len() }
+    fn get(&self, i: usize) -> Option<&Output<Self>> { self.get(i) }
+    fn get_mut(&mut self, i: usize) -> Option<&mut Output<Self>> { self.get_mut(i) }
+}
+
+impl<'a, T> SliceRef for &'a [T] {
+    type Reverse = &'a RevSlice<T>;
+    fn split_at(self, i: usize) -> (Self, Self) {
+        (*self).split_at(i)
+    }
+    fn rev(self) -> Self::Reverse {
         <_>::from(self)
     }
 }
 
-impl<'a, T> RevExt for &'a mut [T] {
-    type Output = &'a mut RevSlice<T>;
-    fn rev(self) -> Self::Output {
+impl<'a, T> SliceRef for &'a mut [T] {
+    type Reverse = &'a mut RevSlice<T>;
+    fn split_at(self, i: usize) -> (Self, Self) {
+        (*self).split_at_mut(i)
+    }
+    fn rev(self) -> Self::Reverse {
         <_>::from(self)
     }
 }
 
-impl<'a, T> RevExt for &'a RevSlice<T> {
-    type Output = &'a [T];
-    fn rev(self) -> Self::Output {
+impl<T> Slice for RevSlice<T> {
+    fn len(&self) -> usize { self.len() }
+    fn get(&self, i: usize) -> Option<&Output<Self>> { self.get(i) }
+    fn get_mut(&mut self, i: usize) -> Option<&mut Output<Self>> { self.get_mut(i) }
+}
+
+impl<'a, T> SliceRef for &'a RevSlice<T> {
+    type Reverse = &'a [T];
+    fn split_at(self, i: usize) -> (Self, Self) {
+        (*self).split_at(i)
+    }
+    fn rev(self) -> Self::Reverse {
         unsafe {
             &*(self as *const _ as *const _)
         }
     }
 }
 
-impl<'a, T> RevExt for &'a mut RevSlice<T> {
-    type Output = &'a mut [T];
-    fn rev(self) -> Self::Output {
+impl<'a, T> SliceRef for &'a mut RevSlice<T> {
+    type Reverse = &'a mut [T];
+    fn split_at(self, i: usize) -> (Self, Self) {
+        (*self).split_at_mut(i)
+    }
+    fn rev(self) -> Self::Reverse {
         unsafe {
             &mut *(self as *mut _ as *mut _)
         }
