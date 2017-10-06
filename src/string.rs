@@ -47,6 +47,7 @@ pub trait StrExt {
     ///     assert!("Abcαβγ".is_acceptable_index(ix));
     /// }
     /// ```
+    #[deprecated(note="Use str::is_char_boundary instead")]
     fn is_acceptable_index(&self, index: usize) -> bool;
 }
 
@@ -98,7 +99,7 @@ impl StrSlice for str {
     fn get_slice<R>(&self, r: R) -> Option<&str> where R: IndexRange {
         let start = r.start().unwrap_or(0);
         let end = r.end().unwrap_or(self.len());
-        if start <= end && self.is_acceptable_index(start) && self.is_acceptable_index(end) {
+        if start <= end && self.is_char_boundary(start) && self.is_char_boundary(end) {
             Some(&self[start..end])
         } else {
             None
@@ -163,7 +164,7 @@ pub trait StringExt {
 impl StringExt for String {
     /// **Panics** if `index` is out of bounds.
     fn insert_str(&mut self, index: usize, s: &str) {
-        assert!(self.is_acceptable_index(index));
+        assert!(self.is_char_boundary(index));
         self.reserve(s.len());
         // move the tail, then copy in the string
         unsafe {
