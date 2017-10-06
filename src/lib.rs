@@ -59,12 +59,14 @@ pub mod prelude {
 }
 
 /// Compare if **a** and **b** are equal *as pointers*.
+#[deprecated(note="use std::ptr::eq")]
 #[inline]
 pub fn ref_eq<T>(a: &T, b: &T) -> bool {
-    ptr_eq(a, b)
+    std::ptr::eq(a, b)
 }
 
 /// Compare if **a** and **b** are equal pointers.
+#[deprecated(note="use std::ptr::eq")]
 #[inline]
 pub fn ptr_eq<T>(a: *const T, b: *const T) -> bool {
     a == b
