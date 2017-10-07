@@ -40,6 +40,7 @@ pub struct Fix<'a, F: 'a, T: 'a, R: 'a = T>(&'a F, PhantomData<fn(T) -> R>);
 impl<'a, F, T, R> Fix<'a, F, T, R>
     where F: Fn(Fix<F, T, R>, T) -> R,
 {
+    /// Create a new fix from the reference to closure `f`
     pub fn new(f: &'a F) -> Self {
         Fix(f, PhantomData)
     }
@@ -87,6 +88,7 @@ pub fn fix<T, R, F>(init: T, closure: F) -> R
 impl<'a, F, T, R> Fix<'a, F, T, R>
     where F: Fn(Fix<F, T, R>, T) -> R,
 {
+    /// Call the fix using the argument `arg`
     pub fn call(&self, arg: T) -> R {
         let f = *self;
         f.0(f, arg)

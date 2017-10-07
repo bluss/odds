@@ -385,9 +385,9 @@ impl_pod!{@array 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}
 /// fn count_ones(data: &[u8]) -> u32 {
 ///     let mut total = 0;
 ///     let (head, mid, tail) = split_aligned_for::<[u64; 2]>(data);
-///     total += head.iter().map(|x| x.count_ones()).sum();
-///     total += mid.iter().map(|x| x[0].count_ones() + x[1].count_ones()).sum();
-///     total += tail.iter().map(|x| x.count_ones()).sum();
+///     total += head.iter().map(|x| x.count_ones()).sum::<u32>();
+///     total += mid.iter().map(|x| x[0].count_ones() + x[1].count_ones()).sum::<u32>();
+///     total += tail.iter().map(|x| x.count_ones()).sum::<u32>();
 ///     total
 /// }
 ///

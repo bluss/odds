@@ -14,6 +14,7 @@ pub trait StrExt {
     /// Repeat the string `n` times.
     ///
     /// Requires `feature="std"`
+    #[deprecated(note="Use str::repeat instead")]
     fn rep(&self, n: usize) -> String;
 
     #[cfg(feature="std")]
@@ -46,13 +47,16 @@ pub trait StrExt {
     ///     assert!("Abcαβγ".is_acceptable_index(ix));
     /// }
     /// ```
+    #[deprecated(note="Use str::is_char_boundary instead")]
     fn is_acceptable_index(&self, index: usize) -> bool;
 }
 
 /// Extension trait for `str` for string slicing without panicking
+#[deprecated(note="Use str::get with a range instead")]
 pub trait StrSlice {
     /// Return a slice of the string, if it is in bounds /and on character boundaries/,
     /// otherwise return `None`
+    #[deprecated(note="Use str::get with a range instead")]
     fn get_slice<R>(&self, r: R) -> Option<&str> where R: IndexRange;
 }
 
@@ -93,11 +97,12 @@ impl StrExt for str {
     }
 }
 
+#[allow(deprecated)]
 impl StrSlice for str {
     fn get_slice<R>(&self, r: R) -> Option<&str> where R: IndexRange {
         let start = r.start().unwrap_or(0);
         let end = r.end().unwrap_or(self.len());
-        if start <= end && self.is_acceptable_index(start) && self.is_acceptable_index(end) {
+        if start <= end && self.is_char_boundary(start) && self.is_char_boundary(end) {
             Some(&self[start..end])
         } else {
             None
@@ -162,7 +167,7 @@ pub trait StringExt {
 impl StringExt for String {
     /// **Panics** if `index` is out of bounds.
     fn insert_str(&mut self, index: usize, s: &str) {
-        assert!(self.is_acceptable_index(index));
+        assert!(self.is_char_boundary(index));
         self.reserve(s.len());
         // move the tail, then copy in the string
         unsafe {
@@ -332,6 +337,7 @@ fn str_windows_not_0() {
     CharWindows::new("abc", 0);
 }
 
+#[allow(deprecated)]
 #[test]
 fn test_acc_index() {
     let s = "Abcαβγ";
@@ -363,6 +369,7 @@ fn test_string_ext() {
     assert_eq!(s, "αxβγabc");
 }
 
+#[allow(deprecated)]
 #[test]
 fn test_slice() {
     let t = "αβγabc";
