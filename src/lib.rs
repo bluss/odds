@@ -60,9 +60,10 @@ pub mod prelude {
 
 /// Compare if **a** and **b** are equal *as pointers*.
 #[deprecated(note="use std::ptr::eq")]
+#[allow(deprecated)]
 #[inline]
 pub fn ref_eq<T>(a: &T, b: &T) -> bool {
-    std::ptr::eq(a, b)
+    ptr_eq(a, b)
 }
 
 /// Compare if **a** and **b** are equal pointers.
