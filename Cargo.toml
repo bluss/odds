@@ -15,7 +15,7 @@ rawpointer = "0.1.0"
 rawslice = "0.1.0"
 
 [dev-dependencies]
-itertools = "0.5.1"
+itertools = "0.7.0"
 memchr = "0.1.11"
 lazy_static = "0.2.2"
 quickcheck = { version = "0.4", default-features = false }
