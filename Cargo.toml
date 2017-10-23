@@ -16,7 +16,7 @@ rawslice = "0.1.0"
 
 [dev-dependencies]
 itertools = "0.7.0"
-memchr = "0.1.11"
+memchr = "2.0"
 lazy_static = "0.2.2"
 quickcheck = { version = "0.4", default-features = false }
 
