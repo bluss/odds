@@ -112,15 +112,6 @@ pub trait SliceFind {
         where Self::Item: PartialEq<U>;
 }
 
-macro_rules! foreach {
-    ($i:pat in $($e:expr),* => $b:expr) => {{
-        $(
-            let $i = $e;
-            $b;
-        )*
-    }}
-}
-
 impl<T> SliceFind for [T] { 
     type Item = T;
     fn find<U: ?Sized>(&self, elt: &U) -> Option<usize>
