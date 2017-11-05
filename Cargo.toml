@@ -13,6 +13,7 @@ keywords = ["data-structure", "debug-assert", "slice", "string", "no_std"]
 [dependencies]
 rawpointer = "0.1.0"
 rawslice = "0.1.0"
+unchecked-index = "0.2"
 
 [dev-dependencies]
 itertools = "0.7.0"

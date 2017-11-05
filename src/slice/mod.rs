@@ -5,8 +5,6 @@ pub mod iter;
 pub mod unalign;
 pub mod rev;
 
-use {slice_unchecked};
-
 pub use self::rev::RevSlice;
 
 use std::ptr;
@@ -15,12 +13,13 @@ use std::mem::{self, align_of, size_of};
 use std::slice::from_raw_parts;
 
 use rawslice::SliceIter;
+use unchecked_index::get_unchecked;
 
 /// Unaligned load of a u64 at index `i` in `buf`
 unsafe fn load_u64(buf: &[u8], i: usize) -> u64 {
     debug_assert!(i + 8 <= buf.len());
     let mut data = 0u64;
-    ptr::copy_nonoverlapping(buf.get_unchecked(i), &mut data as *mut _ as *mut u8, 8);
+    ptr::copy_nonoverlapping(get_unchecked(buf, i), &mut data as *mut _ as *mut u8, 8);
     data
 }
 
@@ -162,8 +161,8 @@ pub trait SliceFindSplit {
 
 /// Unchecked version of `xs.split_at(i)`.
 unsafe fn split_at_unchecked<T>(xs: &[T], i: usize) -> (&[T], &[T]) {
-    (slice_unchecked(xs, 0, i),
-     slice_unchecked(xs, i, xs.len()))
+    (get_unchecked(xs, ..i),
+     get_unchecked(xs, i..))
 }
 
 impl<T> SliceFindSplit for [T] { 

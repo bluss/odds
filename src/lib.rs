@@ -25,6 +25,7 @@
 extern crate core as std;
 extern crate rawslice;
 extern crate rawpointer;
+extern crate unchecked_index;
 
 mod range;
 #[path = "fix.rs"]
@@ -84,6 +85,7 @@ pub unsafe fn raw_byte_repr<T: ?Sized>(ptr: &T) -> &[u8] {
 
 /// Use `debug_assert!` to check indexing in debug mode. In release mode, no checks are done.
 #[inline]
+#[deprecated(note="use unchecked-index crate")]
 pub unsafe fn get_unchecked<T>(data: &[T], index: usize) -> &T {
     debug_assert!(index < data.len());
     data.get_unchecked(index)
@@ -91,6 +93,7 @@ pub unsafe fn get_unchecked<T>(data: &[T], index: usize) -> &T {
 
 /// Use `debug_assert!` to check indexing in debug mode. In release mode, no checks are done.
 #[inline]
+#[deprecated(note="use unchecked-index crate")]
 pub unsafe fn get_unchecked_mut<T>(data: &mut [T], index: usize) -> &mut T {
     debug_assert!(index < data.len());
     data.get_unchecked_mut(index)
@@ -116,6 +119,7 @@ pub unsafe fn debug_assert_unreachable() -> ! {
 /// Check slicing bounds in debug mode, otherwise just act as an unchecked
 /// slice call.
 #[inline]
+#[deprecated(note="use unchecked-index crate")]
 pub unsafe fn slice_unchecked<T>(data: &[T], from: usize, to: usize) -> &[T] {
     debug_assert!((&data[from..to], true).1);
     std::slice::from_raw_parts(data.as_ptr().offset(from as isize), to - from)
@@ -124,6 +128,7 @@ pub unsafe fn slice_unchecked<T>(data: &[T], from: usize, to: usize) -> &[T] {
 /// Check slicing bounds in debug mode, otherwise just act as an unchecked
 /// slice call.
 #[inline]
+#[deprecated(note="use unchecked-index crate")]
 pub unsafe fn slice_unchecked_mut<T>(data: &mut [T], from: usize, to: usize) -> &mut [T] {
     debug_assert!((&data[from..to], true).1);
     std::slice::from_raw_parts_mut(data.as_mut_ptr().offset(from as isize), to - from)
