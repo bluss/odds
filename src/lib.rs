@@ -158,6 +158,7 @@ fn test_repr() {
 }
 
 #[test]
+#[allow(deprecated)]
 #[should_panic]
 fn test_get_unchecked_1() {
     if cfg!(not(debug_assertions)) {
@@ -169,6 +170,7 @@ fn test_get_unchecked_1() {
 }
 
 #[test]
+#[allow(deprecated)]
 #[should_panic]
 fn test_slice_unchecked_1() {
     // These tests only work in debug mode
@@ -181,6 +183,7 @@ fn test_slice_unchecked_1() {
 }
 
 #[test]
+#[allow(deprecated)]
 #[should_panic]
 fn test_slice_unchecked_2() {
     if cfg!(not(debug_assertions)) {
@@ -192,6 +195,7 @@ fn test_slice_unchecked_2() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_slice_unchecked_3() {
     // This test only works in release mode
     // test some benign unchecked slicing
