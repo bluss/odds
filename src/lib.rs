@@ -6,13 +6,25 @@
 //!
 //! The **odds** crate has the following crate feature flags:
 //!
+//! - `std-vec`
+//!   - Enable Vec extensions
+//!   - Implies `std`
+//! - `std-string`
+//!   - Enable String extensions
+//!   - Implies `std`
 //! - `std`
-//!   - Default
-//!   - Use libstd and std features.
+//!   - Enable basic libstd usage.
 //! - `unstable`.
 //!   - Optional.
 //!   - Requires nightly channel.
 //!   - Implement the closure traits for **Fix**.
+//!
+//! If none of the std features are enabled (they are not enabled by default),
+//! then the crate is `no_std`.
+//!
+//! # Rust Version
+//!
+//! This version of the crate requires Rust 1.15 or later.
 //!
 
 #![doc(html_root_url = "https://docs.rs/odds/0.2/")]
