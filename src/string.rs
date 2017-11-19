@@ -160,6 +160,7 @@ impl<'a> Iterator for Substrings<'a> {
 /// Requires `feature="std-string"`
 pub trait StringExt {
     /// **Panics** if `index` is out of bounds.
+    #[deprecated(note="Use String::insert_str")]
     fn insert_str(&mut self, index: usize, s: &str);
 }
 
