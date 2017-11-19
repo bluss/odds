@@ -29,6 +29,3 @@ std = []
 unstable = []
 
 docs = ["std-string", "std-vec"]
-
-[profile.bench]
-debug = true
