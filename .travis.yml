@@ -6,10 +6,12 @@ matrix:
     - rust: stable
       env:
       - NODEFAULT=1
+      - FEATURES="std-vec std-string"
     - rust: beta
     - rust: nightly
       env:
       - FEATURES='unstable'
+      - FEATURES="std-vec std-string"
 branches:
   only:
     - master
