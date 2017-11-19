@@ -20,12 +20,33 @@ __ https://docs.rs/odds/
 Recent Changes
 --------------
 
-- 
+- Not yet released
 
-  - Add ``SliceIter``. Use unrolled ``.all(), .find(), position(), rposition()``
+  - Update the ``fix`` and ``Fix`` closure combinator to not use
+    dynamic dispatch! new formulation was an idea by @talchas
+  - Depend on crate ``rawslice`` for its ``SliceIter``.
   - More features for ``SliceIter`` and ``SliceCopyIter``: access start/end
     pointer, implement ``Index``.
   - Add ``BlockedIter``
+  - Remove functionality that is unused or directly conflicts with other
+    new features, for example in std:
+
+    + ``Vec::splice``. Use the std splice.
+
+  - Deprecate functionality that has been added to std:
+
+    + ``String::insert_str``
+    + ``str::rep``
+    + ``ptr_eq``, ``ref_eq``: use ``std::ptr::eq``
+
+  - Deprecate functionality that has moved:
+
+    + ``get_unchecked``, ``slice_unchecked``: use ``unchecked-index`` crate instead
+
+  - Vec functionality is now opt-in under feature ``std-vec``.
+    String functionality the same under ``std-string``.
+    The crate is now ``no_std`` by default.
+
 
 - 0.2.25
 
