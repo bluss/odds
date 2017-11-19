@@ -13,13 +13,13 @@ keywords = ["data-structure", "debug-assert", "slice", "string", "no_std"]
 [dependencies]
 rawpointer = "0.1.0"
 rawslice = "0.1.0"
-unchecked-index = "0.2"
+unchecked-index = "0.2.2"
 
 [dev-dependencies]
-itertools = "0.7.0"
+itertools = "0.7.2"
 memchr = "2.0"
 lazy_static = "0.2.2"
-quickcheck = { version = "0.4", default-features = false }
+quickcheck = { version = "0.4.1", default-features = false }
 
 [features]
 default = ["std"]
