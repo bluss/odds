@@ -4,14 +4,6 @@ extern crate itertools;
 
 use odds::string::StrExt;
 
-#[allow(deprecated)]
-#[test]
-fn rep() {
-    assert_eq!("".rep(0), "");
-    assert_eq!("xy".rep(0), "");
-    assert_eq!("xy".rep(3), "xyxyxy");
-}
-
 #[test]
 fn prefixes() {
     itertools::assert_equal(
