@@ -20,10 +20,11 @@ __ https://docs.rs/odds/
 Recent Changes
 --------------
 
-- Not yet released
+- 0.3.0
 
   - Update the ``fix`` and ``Fix`` closure combinator to not use
     dynamic dispatch! new formulation was an idea by @talchas
+  - Implement Error for ``EncodeUtf8Error`` by George Burton
   - Depend on crate ``rawslice`` for its ``SliceIter``.
   - More features for ``SliceIter`` and ``SliceCopyIter``: access start/end
     pointer, implement ``Index``.
@@ -46,7 +47,11 @@ Recent Changes
   - Vec functionality is now opt-in under feature ``std-vec``.
     String functionality the same under ``std-string``.
     The crate is now ``no_std`` by default.
+  - Proper license files added to the repo, thanks @raphlinus!
 
+- 0.2.26
+
+  - Proper license files by @raphlinus
 
 - 0.2.25
 
