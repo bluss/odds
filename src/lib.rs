@@ -8,7 +8,6 @@
 //!
 //! - `std`
 //!   - Default
-//!   - Requires Rust 1.6 *to opt out of*
 //!   - Use libstd and std features.
 //! - `unstable`.
 //!   - Optional.
@@ -19,9 +18,9 @@
 #![doc(html_root_url = "https://docs.rs/odds/0.2/")]
 #![cfg_attr(feature="unstable", feature(unboxed_closures, fn_traits))]
 
-#![cfg_attr(not(feature="std"), no_std)]
+#![cfg_attr(not(feature = "std"), no_std)]
 
-#[cfg(not(feature="std"))]
+#[cfg(not(feature = "std"))]
 extern crate core as std;
 extern crate rawslice;
 extern crate rawpointer;
@@ -47,11 +46,10 @@ pub mod prelude {
     pub use slice::SliceFind;
     pub use slice::SliceIterExt;
     pub use string::StrExt;
-    #[cfg(feature="std")]
     pub use string::StrChunksWindows;
-    #[cfg(feature="std")]
+    #[cfg(feature = "std-string")]
     pub use string::StringExt;
-    #[cfg(feature="std")]
+    #[cfg(feature = "std-vec")]
     pub use vec::{vec, VecExt};
     #[doc(no_inline)]
     pub use IndexRange;

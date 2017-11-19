@@ -406,6 +406,7 @@ pub fn split_aligned_for<T: Pod>(data: &[u8]) -> (&[u8], &[T], &[u8]) {
     }
 }
 
+#[cfg(feature = "std")]
 #[test]
 fn test_split_aligned() {
     let data = vec![0; 1024];

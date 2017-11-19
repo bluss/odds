@@ -1,7 +1,7 @@
 //! Extensions to `&str` and `String`
 //!
 use std::iter;
-#[cfg(feature="std")]
+#[cfg(feature="std-string")]
 use std::ptr;
 use std::str;
 use std::ops::Deref;
@@ -10,14 +10,14 @@ use IndexRange;
 
 /// Extra methods for `str`
 pub trait StrExt {
-    #[cfg(feature="std")]
+    #[cfg(feature="std-string")]
     /// Repeat the string `n` times.
     ///
     /// Requires `feature="std"`
     #[deprecated(note="Use str::repeat instead")]
     fn rep(&self, n: usize) -> String;
 
-    #[cfg(feature="std")]
+    #[cfg(feature="std-string")]
     /// Requires `feature="std"`
     fn append(&self, s: &str) -> String;
 
@@ -61,14 +61,14 @@ pub trait StrSlice {
 }
 
 impl StrExt for str {
-    #[cfg(feature="std")]
+    #[cfg(feature="std-string")]
     fn rep(&self, n: usize) -> String {
         let mut s = String::with_capacity(self.len() * n);
         s.extend((0..n).map(|_| self));
         s
     }
 
-    #[cfg(feature="std")]
+    #[cfg(feature="std-string")]
     fn append(&self, s: &str) -> String {
         String::from(self) + s
     }
@@ -154,16 +154,16 @@ impl<'a> Iterator for Substrings<'a> {
     }
 }
 
-#[cfg(feature="std")]
+#[cfg(feature = "std-string")]
 /// Extra methods for `String`
 ///
-/// Requires `feature="std"`
+/// Requires `feature="std-string"`
 pub trait StringExt {
     /// **Panics** if `index` is out of bounds.
     fn insert_str(&mut self, index: usize, s: &str);
 }
 
-#[cfg(feature="std")]
+#[cfg(feature="std-string")]
 impl StringExt for String {
     /// **Panics** if `index` is out of bounds.
     fn insert_str(&mut self, index: usize, s: &str) {
@@ -359,6 +359,7 @@ fn test_acc_index() {
     assert!(t.is_acceptable_index(0));
 }
 
+#[cfg(feature = "std-string")]
 #[test]
 fn test_string_ext() {
     let mut s = String::new();

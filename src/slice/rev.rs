@@ -332,7 +332,7 @@ fn test_rev_slice_slice() {
     
     for i in 0..r.len() {
         for j in i..r.len() {
-            println!("{:?}, {:?}", &r[i..j], &rev[i..j]);
+            //println!("{:?}, {:?}", &r[i..j], &rev[i..j]);
             assert_eq!(&r[i..j], &rev[i..j]);
         }
     }

@@ -22,11 +22,13 @@ lazy_static = "0.2.2"
 quickcheck = { version = "0.4.1", default-features = false }
 
 [features]
-default = ["std"]
-# Default
-# Use libstd
+default = []
+std-string = ["std"]
+std-vec = ["std"]
 std = []
 unstable = []
+
+docs = ["std-string", "std-vec"]
 
 [profile.bench]
 debug = true

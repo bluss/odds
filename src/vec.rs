@@ -1,7 +1,7 @@
 //! Extensions to `Vec`
 //!
-//! Requires `feature="std"`
-#![cfg(feature="std")]
+//! Requires `feature="std-vec"`
+#![cfg(feature="std-vec")]
 
 use slice::SliceFind;
 
@@ -16,7 +16,7 @@ pub fn vec<I>(iterable: I) -> Vec<I::Item>
 
 /// Extra methods for `Vec<T>`
 ///
-/// Requires `feature="std"`
+/// Requires `feature="std-vec"`
 pub trait VecExt<T> {
     /// Retains only the elements specified by the predicate.
     ///
