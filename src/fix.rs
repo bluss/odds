@@ -1,13 +1,13 @@
 
 /// Fixpoint combinator for rust closures, generalized over the return type.
 ///
+/// **Note:** Use this best through the [`fix`](fn.fix.html) function.
+///
 /// In **Fix\<T, R\>**, **T** is the argument type, and **R** is the return type,
 /// **R** defaults to **T**.
 ///
 /// Calling the `Fix` value only supports function call notation with the nightly
 /// channel and the crate feature ‘unstable’ enabled; use the .call() method otherwise.
-///
-/// Use this best through the `fix` function.
 ///
 /// ```
 /// use odds::Fix;
