@@ -20,6 +20,13 @@ __ https://docs.rs/odds/
 Recent Changes
 --------------
 
+- 0.3.1
+
+  - Go back to the 0.2.x formulation of the ``fix`` function, because the new
+    fancy version relied on a type system detail that has been changed in Rust
+    — closures must not be able to use their own type in their arguments. Fair
+    enough.
+
 - 0.3.0
 
   - Update the ``fix`` and ``Fix`` closure combinator to not use
