@@ -41,7 +41,7 @@ use super::SliceFind;
 /// - A boxed slice can be reversed too:
 ///   `impl<T> From<Box<[T]>> for Box<RevSlice<T>>`.
 #[derive(Debug, Eq)]
-#[repr(C)]
+#[repr(transparent)]
 pub struct RevSlice<T>([T]);
 
 impl<T> RevSlice<T> {
