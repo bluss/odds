@@ -56,7 +56,6 @@ use std::mem;
 /// prelude of often used traits and functions
 pub mod prelude {
     pub use slice::SliceFind;
-    pub use slice::SliceIterExt;
     pub use string::StrExt;
     pub use string::StrChunksWindows;
     #[cfg(feature = "std-string")]
