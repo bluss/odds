@@ -20,6 +20,13 @@ __ https://docs.rs/odds/
 Recent Changes
 --------------
 
+- 0.4.0
+
+  - Remove MendSlices
+  - Remove deprecated items
+  - Updated rawpointer dependency
+  - Updated dev-dependencies
+
 - 0.3.1
 
   - Go back to the 0.2.x formulation of the ``fix`` function, because the new
