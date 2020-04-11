@@ -29,26 +29,6 @@ pub trait StrExt {
 
     /// Produce all non-empty substrings
     fn substrings(&self) -> Substrings;
-
-    /// Return `true` if `index` is acceptable for slicing the string.
-    ///
-    /// Acceptable indices are byte offsets from the start of the string
-    /// that mark the start of an encoded utf-8 sequence, or an index equal
-    /// to `self.len()`.
-    ///
-    /// Return `false` if the index is out of bounds.
-    ///
-    /// For example the string `"Abcαβγ"` has length is 9 and the acceptable
-    /// indices are *0, 1, 2, 3, 5, 7,* and *9*.
-    ///
-    /// ```
-    /// use odds::string::StrExt;
-    /// for &ix in &[0, 1, 2, 3, 5, 7, 9] {
-    ///     assert!("Abcαβγ".is_acceptable_index(ix));
-    /// }
-    /// ```
-    #[deprecated(note="Use str::is_char_boundary instead")]
-    fn is_acceptable_index(&self, index: usize) -> bool;
 }
 
 /// Extension trait for `str` for string slicing without panicking
@@ -83,17 +63,6 @@ impl StrExt for str {
 
     fn substrings(&self) -> Substrings {
         Substrings { iter: self.prefixes().flat_map(str::suffixes) }
-    }
-
-    fn is_acceptable_index(&self, index: usize) -> bool {
-        if index == 0 || index == self.len() {
-            true
-        } else {
-            self.as_bytes().get(index).map_or(false, |byte| {
-                // check it's not a continuation byte
-                *byte as i8 >= -0x40
-            })
-        }
     }
 }
 
@@ -336,28 +305,6 @@ fn str_windows() {
 #[should_panic]
 fn str_windows_not_0() {
     CharWindows::new("abc", 0);
-}
-
-#[allow(deprecated)]
-#[test]
-fn test_acc_index() {
-    let s = "Abcαβγ";
-    for (ix, ch) in s.char_indices() {
-        assert!(s.is_acceptable_index(ix));
-        // check the continuation bytes
-        for j in 1..ch.len_utf8() {
-            assert!(!s.is_acceptable_index(ix + j));
-        }
-    }
-    assert!(s.is_acceptable_index(s.len()));
-    let indices = [0, 1, 2, 3, 5, 7, 9];
-
-    for &ix in &indices {
-        assert!(s.is_acceptable_index(ix));
-    }
-
-    let t = "";
-    assert!(t.is_acceptable_index(0));
 }
 
 #[cfg(feature = "std-string")]

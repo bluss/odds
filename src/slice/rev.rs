@@ -7,9 +7,8 @@ use crate::std::slice::{Iter, IterMut};
 
 use crate::std::ops::{Index, IndexMut};
 
-use crate::{get_unchecked, get_unchecked_mut};
+use unchecked_index::{get_unchecked, get_unchecked_mut};
 use crate::IndexRange;
-use crate::{slice_unchecked, slice_unchecked_mut};
 
 use super::SliceFind;
 
@@ -237,7 +236,7 @@ impl<T, R> Index<R> for RevSlice<T>
         let end_r = self.len() - start;
         let start_r = self.len() - end;
         unsafe {
-            <&RevSlice<_>>::from(slice_unchecked(&self.0, start_r, end_r))
+            <&RevSlice<_>>::from(get_unchecked(&self.0, start_r..end_r))
         }
     }
 }
@@ -255,7 +254,7 @@ impl<T, R> IndexMut<R> for RevSlice<T>
         let end_r = self.len() - start;
         let start_r = self.len() - end;
         unsafe {
-            <&mut RevSlice<_>>::from(slice_unchecked_mut(&mut self.0, start_r, end_r))
+            <&mut RevSlice<_>>::from(get_unchecked_mut(&mut self.0, start_r..end_r))
         }
     }
 }

@@ -2,7 +2,6 @@
 
 
 use crate::std::mem::size_of;
-use crate::std::mem::uninitialized;
 use crate::std::marker::PhantomData;
 use crate::std::ptr;
 
@@ -77,18 +76,12 @@ impl<'a, T> UnalignedIter<'a, T> {
     pub fn peek_next(&self) -> Option<T> where T: Copy {
         if self.ptr != self.end {
             unsafe {
-                Some(load_unaligned(self.ptr))
+                Some(ptr::read_unaligned(self.ptr as *const T))
             }
         } else {
             None
         }
     }
-}
-
-unsafe fn load_unaligned<T>(p: *const u8) -> T where T: Copy {
-    let mut x = uninitialized();
-    ptr::copy_nonoverlapping(p, &mut x as *mut _ as *mut u8, size_of::<T>());
-    x
 }
 
 impl<'a, T> Iterator for UnalignedIter<'a, T>
@@ -98,7 +91,7 @@ impl<'a, T> Iterator for UnalignedIter<'a, T>
     fn next(&mut self) -> Option<Self::Item> {
         if self.ptr != self.end {
             unsafe {
-                let elt = Some(load_unaligned::<T>(self.ptr));
+                let elt = Some(ptr::read_unaligned(self.ptr as *const T));
                 self.ptr = self.ptr.offset(size_of::<T>() as isize);
                 elt
             }
