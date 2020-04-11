@@ -68,21 +68,6 @@ pub mod prelude {
     pub use crate::fix;
 }
 
-/// Compare if **a** and **b** are equal *as pointers*.
-#[deprecated(note="use std::ptr::eq")]
-#[allow(deprecated)]
-#[inline]
-pub fn ref_eq<T>(a: &T, b: &T) -> bool {
-    ptr_eq(a, b)
-}
-
-/// Compare if **a** and **b** are equal pointers.
-#[deprecated(note="use std::ptr::eq")]
-#[inline]
-pub fn ptr_eq<T>(a: *const T, b: *const T) -> bool {
-    a == b
-}
-
 /// Safe to use with any wholly initialized memory `ptr`
 #[inline]
 pub unsafe fn raw_byte_repr<T: ?Sized>(ptr: &T) -> &[u8] {
