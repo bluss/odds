@@ -14,7 +14,7 @@ keywords = ["data-structure", "debug-assert", "slice", "string", "no_std"]
 categories = ["no-std"]
 
 [dependencies]
-rawpointer = "0.1.0"
+rawpointer = "0.2"
 rawslice = "0.1.0"
 unchecked-index = "0.2.2"
 
@@ -22,7 +22,7 @@ unchecked-index = "0.2.2"
 itertools = "0.8"
 memchr = "2.0"
 lazy_static = "1"
-quickcheck = { version = "0.8", default-features = false }
+quickcheck = { version = "0.9", default-features = false }
 
 [features]
 default = []
