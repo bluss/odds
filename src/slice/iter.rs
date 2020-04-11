@@ -1,8 +1,8 @@
 //! Slice iterators
 
-use std::mem::size_of;
-use std::marker::PhantomData;
-use std::ops::Index;
+use crate::std::mem::size_of;
+use crate::std::marker::PhantomData;
+use crate::std::ops::Index;
 
 pub use rawslice::SliceIter;
 

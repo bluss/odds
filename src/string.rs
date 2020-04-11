@@ -1,12 +1,12 @@
 //! Extensions to `&str` and `String`
 //!
-use std::iter;
+use crate::std::iter;
 #[cfg(feature="std-string")]
 use std::ptr;
-use std::str;
-use std::ops::Deref;
+use crate::std::str;
+use crate::std::ops::Deref;
 
-use IndexRange;
+use crate::IndexRange;
 
 /// Extra methods for `str`
 pub trait StrExt {
@@ -303,7 +303,7 @@ impl CharStr {
             buf: [0; 4],
             len: c.len_utf8() as u32,
         };
-        let _ = ::char::encode_utf8(c, &mut self_.buf);
+        let _ = crate::char::encode_utf8(c, &mut self_.buf);
         self_
     }
 }

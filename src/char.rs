@@ -14,7 +14,7 @@
 
 #[cfg(feature = "std")]
 use std::error::Error;
-use std::fmt::{Display, Formatter, self};
+use crate::std::fmt::{Display, Formatter, self};
 
 // UTF-8 ranges and tags for encoding characters
 const TAG_CONT: u8    = 0b1000_0000;

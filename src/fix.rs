@@ -34,7 +34,7 @@ assert_eq!(fact(5), 120);
 ```
 "
 )]
-pub struct Fix<'a, T: 'a, R: 'a = T>(pub &'a Fn(Fix<T, R>, T) -> R);
+pub struct Fix<'a, T: 'a, R: 'a = T>(pub &'a dyn Fn(Fix<T, R>, T) -> R);
 
 /// Fixpoint combinator for rust closures, generalized over the return type.
 ///

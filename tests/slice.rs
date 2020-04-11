@@ -2,7 +2,7 @@
 extern crate itertools;
 extern crate odds;
 
-use itertools::Itertools;
+
 
 /// Like CharIndices iterator, except it yields slices instead
 #[derive(Copy, Clone, Debug)]

@@ -1,13 +1,13 @@
 //! An iterator for (possibly unaligned) blocking of byte ranges
 
 
-use std::mem::size_of;
-use std::mem::uninitialized;
-use std::marker::PhantomData;
-use std::ptr;
+use crate::std::mem::size_of;
+use crate::std::mem::uninitialized;
+use crate::std::marker::PhantomData;
+use crate::std::ptr;
 
-use slice::Pod;
-use slice::iter::SliceCopyIter;
+use crate::slice::Pod;
+use crate::slice::iter::SliceCopyIter;
 
 /// An iterator of `T` (by value) where each value read from a pointer
 /// that is (possibly) unaligned.

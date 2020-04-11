@@ -10,10 +10,10 @@
 //! option. This file may not be copied, modified, or distributed
 //! except according to those terms.
 
-use std::fmt;
-use std::marker;
-use std::mem;
-use std::ops::{Index, IndexMut};
+use crate::std::fmt;
+use crate::std::marker;
+use crate::std::mem;
+use crate::std::ops::{Index, IndexMut};
 
 
 /// (the stride) skipped per iteration.
@@ -252,12 +252,12 @@ macro_rules! stride_impl {
         {
             fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
             {
-                try!(write!(f, "["));
+                r#try!(write!(f, "["));
                 for i in 0..self.len() {
                     if i != 0 {
-                        try!(write!(f, ", "));
+                        r#try!(write!(f, ", "));
                     }
-                    try!(write!(f, "{:?}", (*self)[i]));
+                    r#try!(write!(f, "{:?}", (*self)[i]));
                 }
                 write!(f, "]")
             }

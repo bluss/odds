@@ -47,25 +47,25 @@ pub mod vec;
 pub mod slice;
 pub mod stride;
 
-pub use fix_impl::Fix;
-pub use fix_impl::fix;
-pub use range::IndexRange;
+pub use crate::fix_impl::Fix;
+pub use crate::fix_impl::fix;
+pub use crate::range::IndexRange;
 
-use std::mem;
+use crate::std::mem;
 
 /// prelude of often used traits and functions
 pub mod prelude {
-    pub use slice::SliceFind;
-    pub use string::StrExt;
-    pub use string::StrChunksWindows;
+    pub use crate::slice::SliceFind;
+    pub use crate::string::StrExt;
+    pub use crate::string::StrChunksWindows;
     #[cfg(feature = "std-string")]
     pub use string::StringExt;
     #[cfg(feature = "std-vec")]
     pub use vec::{vec, VecExt};
     #[doc(no_inline)]
-    pub use IndexRange;
+    pub use crate::IndexRange;
     #[doc(no_inline)]
-    pub use fix;
+    pub use crate::fix;
 }
 
 /// Compare if **a** and **b** are equal *as pointers*.

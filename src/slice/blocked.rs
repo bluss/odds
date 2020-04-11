@@ -1,8 +1,8 @@
 //! Blocked iterator
 
 
-use std::mem::size_of;
-use std::marker::PhantomData;
+use crate::std::mem::size_of;
+use crate::std::marker::PhantomData;
 
 use rawslice::SliceIter;
 use rawpointer::ptrdistance;
@@ -141,7 +141,7 @@ impl<'a, B, T> ExactSizeIterator for BlockedIter<'a, B, T>
     where B: Block<Item=T>,
 { }
 
-use std::ops::Index;
+use crate::std::ops::Index;
 
 impl<'a, B, T> Index<usize> for BlockedIter<'a, B, T>
     where B: Block<Item=T>,

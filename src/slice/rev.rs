@@ -1,15 +1,15 @@
 //! A reversed view of a slice.
 
-use std::hash::{Hasher, Hash};
-use std::mem::transmute;
-use std::iter::Rev;
-use std::slice::{Iter, IterMut};
+use crate::std::hash::{Hasher, Hash};
+use crate::std::mem::transmute;
+use crate::std::iter::Rev;
+use crate::std::slice::{Iter, IterMut};
 
-use std::ops::{Index, IndexMut};
+use crate::std::ops::{Index, IndexMut};
 
-use {get_unchecked, get_unchecked_mut};
-use IndexRange;
-use {slice_unchecked, slice_unchecked_mut};
+use crate::{get_unchecked, get_unchecked_mut};
+use crate::IndexRange;
+use crate::{slice_unchecked, slice_unchecked_mut};
 
 use super::SliceFind;
 

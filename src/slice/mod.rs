@@ -7,10 +7,10 @@ pub mod rev;
 
 pub use self::rev::RevSlice;
 
-use std::ptr;
-use std::cmp::min;
-use std::mem::{self, align_of, size_of};
-use std::slice::from_raw_parts;
+use crate::std::ptr;
+use crate::std::cmp::min;
+use crate::std::mem::{align_of, size_of};
+use crate::std::slice::from_raw_parts;
 
 use rawslice::SliceIter;
 use unchecked_index::get_unchecked;
